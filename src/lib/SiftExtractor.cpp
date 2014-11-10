@@ -22,6 +22,6 @@ using namespace bio;
 SiftExtractor::SiftExtractor() {}
 SiftExtractor::~SiftExtractor() {}
 
-void SiftExtractor::sift(IplImage *img, vector<Feature> & outFeatures) {
+void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 
 }

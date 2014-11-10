@@ -26,6 +26,8 @@ public:
     double orient;
 
     double descriptor[DEFAULT_DESCR_LEN];
+
+//    Mat *img;
 };
 
 }

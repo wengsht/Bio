@@ -19,9 +19,11 @@
 #define _AUTOGUARD_SiftExtractor_H_
 
 #include "feature.h"
-#include "opencv/cxcore.h"
+
+#include "opencv2/imgproc/imgproc.hpp"
 
 using namespace std;
+using namespace cv;
 
 namespace bio {
 class SiftExtractor {
@@ -36,7 +38,7 @@ class SiftExtractor {
         ~SiftExtractor();
 
         // extract 
-        void sift(IplImage * img, vector<Feature> & outFeatures);
+        void sift(Mat* img, vector<Feature> & outFeatures);
 
     private:
         sift_configure configures;

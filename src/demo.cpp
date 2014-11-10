@@ -19,17 +19,25 @@
 #include <iostream>
 #include "feature.h"
 #include "SiftExtractor.h"
+
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
 using namespace std;
 
 using namespace bio;
+
+using namespace cv;
 int main() {
     cout << "Final Proj" << endl;
 
     SiftExtractor extractor;
 
+    Mat src = imread("./beaver.png", 1);
+    imshow("demo", src);
+
     vector<Feature> null;
      // TODO
-    extractor.sift(NULL, null);
+    extractor.sift(&src, null);
 
     return 0;
 } 
