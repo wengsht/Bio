@@ -1,0 +1,8 @@
+#include "configure.h"
+
+SIFT_CONFIGURE(double, basicSigma, DEFAULT_BASIC_SIGMA)
+SIFT_CONFIGURE(int, innerLayerPerOct, DEFAULT_INNER_LAYER_OCT)
+SIFT_CONFIGURE(double, extremaThres, DEFAULT_EXTREMA_THRESHOLD)
+SIFT_CONFIGURE(double, r, DEFAULT_EDGE_POINT_THRESHOLD)
+SIFT_CONFIGURE(bool, doEliminateEdgeResponse, true)
+

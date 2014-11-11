@@ -25,11 +25,10 @@ using namespace bio;
 using namespace std;
 
 SiftExtractor::SiftExtractor() {
-    configures.basicSigma = DEFAULT_BASIC_SIGMA;
-
-    configures.innerLayerPerOct = DEFAULT_INNER_LAYER_OCT;
-
-    configures.extremaThres = DEFAULT_EXTREMA_THRESHOLD;
+#define SIFT_CONFIGURE(type, name, value) \
+        configures.name = value;
+#include "siftConfigure.def"
+#undef SIFT_CONFIGURE
 }
 
 SiftExtractor::~SiftExtractor() {}
@@ -50,7 +49,6 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
     octaves.push_back( Octave() );
 
     octaves[0].addImg( img->clone() );
-//    octaves[0].addImg( img->clone() );
     octaves[0].sigma = configures.basicSigma;
     octaves[0].generateBlurLayers(S + 3);
 
@@ -65,18 +63,15 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
             octaves[i].sigma = octaves[i-1].sigma * k;
 
         // 当前oct的第一层是由上一个oct的倒数第三张图片复制来的
-        Mat &prevImg = octaves[i-1][0];
+        Mat &prevImg = octaves[i-1][S];
 
         octaves[i].addImg( prevImg.clone() );
 
         pyrDown( prevImg, octaves[i][0], Size(prevImg.cols/2, prevImg.rows/2));
 
-//        printf("%d %d\n", octaves[i][0].cols, octaves[i][0].rows);
-
         octaves[i].generateBlurLayers(S + 3);
 
         /*   
-        printf("%d %d\n", prevImg.cols, prevImg.rows);
         imshow("= =", prevImg);
         waitKey(1000);
         */
@@ -140,24 +135,6 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nx
         }
     }
 
-    /*  
-    if(maxEx || minEx) {
-        printf("%lf\n", octave[layer].at<double>(y, x));
-
-        for(int nl = -1; nl <= 1; nl ++) {
-            nearOct = layer + nl;
-            for(int nx = -1; nx <= 1; nx ++) {
-                nearX = x + nx;
-                for(int ny = -1; ny <= 1 && (minEx || maxEx); ny ++) {
-                    nearY = y + ny;
-                    printf("%lf ", octave[nearOct].at<double>(nearY, nearX));
-                }
-                puts("");
-            }
-        }
-    }
-    */
-
     return (minEx || maxEx);
 }
 
@@ -174,24 +151,6 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
 
     memset(maxFlags, true, 2 * matrixSiz);
     memset(minFlags, true, 2 * matrixSiz);
-
-    /*  
-    for(int i = 0;i < 1;i++) {
-    for(int x = 0; x < colSiz; x++) {
-        for(int y = 0; y < rowSiz; y++) {
-//            printf("%d %d\n", x, y);
-            octave[i].at<double>(y, x) ;
-        }
-    }
-    }
-
-    puts("end");
-
-    return ;
-    */
-
-//                printf("wengsht -\n");
-
 
     // Detect ith image's extremas
     for(int i = 1, rollIdx = 0; i < laySiz - 1; i ++, rollIdx ^= 1) {
@@ -210,12 +169,11 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
                 if(!maxFlags[flagIdx] && !minFlags[flagIdx])
                     continue;
 
-                /*  */
-//                printf("%d %d %d\n", i, x, y);
-//                printf("%d %d\n", octave[i].cols, octave[i].rows);
-
                 if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
-                    //                    printf("%d %d %d\n", i, y, x);
+                    if(! shouldEliminate(octave, i, x, y)) {
+
+                        addFeature( octave, i, x, y, outFeatures );
+                    }
                 }
             }
         }
@@ -223,6 +181,44 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
 
     delete []maxFlags;
     delete []minFlags;
+}
+
+void SiftExtractor::addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures) {
+    Feature newFea;
+    newFea.img = &(octave[layer]);
+    newFea.location = bio::point(x, y);
+
+    outFeatures.push_back(newFea);
+}
+
+bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
+    static double threshold = (configures.r + 1) * (configures.r + 1) / configures.r;
+
+    if(! configures.doEliminateEdgeResponse) 
+        return false;
+
+    double Dxx, Dyy, Dxy, Tr, Det;
+
+    //Hessian
+    Dxx = img.at<double>(y, x + 1) - img.at<double>(y, x) * 2 + img.at<double>(y, x-1);
+    Dyy = img.at<double>(y+1, x) - img.at<double>(y, x) * 2 + img.at<double>(y-1, x);
+    Dxy = img.at<double>(y+1, x+1) - img.at<double>(y+1, x-1) - img.at<double>(y-1, x+1) + img.at<double>(y-1, x-1);
+    Dxy /= 4.0;
+
+    Tr = Dxx + Dyy;
+    Det = Dxx * Dyy - Dxy * Dxy;
+
+    if(0.0 == Det) return true;
+
+    double val = Tr * Tr / Det;
+
+    return val > threshold;
+}
+bool SiftExtractor::shouldEliminate(Octave &octave, int layer, int x, int y) {
+
+    if(edgePointEliminate(octave[layer], x, y)) 
+        return true;
+    return false;
 }
 
 void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & outFeatures) {

@@ -32,15 +32,13 @@ using namespace cv;
 namespace bio {
 class SiftExtractor {
     struct sift_configure {
-        // 每次添加configure的参数的时候
-        // 记得在configure.h 写默认值，
-        // 并且写一个set函数方便调节
+        // siftConfigure.def
         
-        double basicSigma;
+#define SIFT_CONFIGURE(type, name, value) \
+        type name;
+#include "siftConfigure.def"
+#undef SIFT_CONFIGURE
 
-        int innerLayerPerOct;
-
-        double extremaThres;
     };
 
     class Octave {
@@ -86,7 +84,7 @@ class SiftExtractor {
                 images[i] = images[i+1] - images[i];
 
                 /*  
-                imshow("test", images[i] * 10);
+                imshow("test", images[i]);
                 waitKey(1000);
                 */
             }
@@ -102,6 +100,9 @@ class SiftExtractor {
         SiftExtractor();
         ~SiftExtractor();
 
+        sift_configure & getConfigureFile() {
+            return configures;
+        }
         // extract 
         void sift(Mat* img, vector<Feature> & outFeatures);
 
@@ -122,6 +123,12 @@ class SiftExtractor {
         // near pixels that can not be max/min will be flagged
         // Caller should make sure that [layer][y][x] is not a pixel on the margin or outside
         bool isExtrema(Octave & octave, int layer, int x, int y, bool *nxtMinFlags, bool* nxtMaxFlags, int rollIdx);
+        bool shouldEliminate(Octave &octave, int layer, int x, int y);
+        bool edgePointEliminate(Mat &img, int x, int y);
+
+        void addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures);
+
+    private:
         sift_configure configures;
 };
 }

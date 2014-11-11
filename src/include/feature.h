@@ -3,6 +3,7 @@
 
 #include "define.h"
 #include "configure.h"
+#include "opencv2/imgproc/imgproc.hpp"
 
 namespace bio {
 
@@ -27,7 +28,7 @@ public:
 
     double descriptor[DEFAULT_DESCR_LEN];
 
-//    Mat *img;
+    cv::Mat *img;
 };
 
 }
