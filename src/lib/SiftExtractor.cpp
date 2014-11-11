@@ -87,43 +87,73 @@ void SiftExtractor::generateDOGPyramid(vector< Octave > & octaves) {
 
     for(int i = 0;i < octSiz; i++) 
         octaves[i].generateDogLayers();
+
+//    imwrite("haha.jpeg", octaves[1][2]);
 }
 
 
-inline 
-bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nxtMinFlags, bool* nxtMaxFlags) {
+bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nxtMinFlags, bool* nxtMaxFlags, int rollIdx) {
     int colSiz = octave[0].cols;
+    int rowSiz = octave[0].rows;
+    int matrixSiz = colSiz * rowSiz;
 
     int nearOct, nearX, nearY;
     int nearFlagIdx;
     bool minEx = true, maxEx = true;
+
     for(int nl = -1; nl <= 1; nl ++) {
         nearOct = layer + nl;
+        printf("%d %d\n", nearOct, octave.size());
         for(int nx = -1; nx <= 1; nx ++) {
             nearX = x + nx;
             for(int ny = -1; ny <= 1 && (minEx || maxEx); ny ++) {
+                if(!nl && !nx && !ny) continue;
+
                 nearY = y + ny;
 
-                nearFlagIdx = nearX * colSiz + nearY;
+                nearFlagIdx = (rollIdx ^ nl) * matrixSiz + nearX * colSiz + nearY;
 
-                if(octave[layer].at<double>(y, x) > octave[nearOct].at<double>(nearY, nearX)) {
+                if(octave[layer].at<double>(y, x) >= octave[nearOct].at<double>(nearY, nearX)) {
                     minEx = false;
-                    nxtMaxFlags[nearFlagIdx] = false;
+
+                    if(nl != 1)
+                        nxtMaxFlags[nearFlagIdx] = false;
                 }
 
-                if(octave[layer].at<double>(y, x) < octave[nearOct].at<double>(nearY, nearX)) {
+                if(octave[layer].at<double>(y, x) <= octave[nearOct].at<double>(nearY, nearX)) {
                     maxEx = false;
-                    nxtMinFlags[nearFlagIdx] = false;
+
+                    if(nl != 1)
+                        nxtMinFlags[nearFlagIdx] = false;
                 }
             }
         }
     }
+
+    /*  
+    if(maxEx || minEx) {
+        printf("%lf\n", octave[layer].at<double>(y, x));
+
+        for(int nl = -1; nl <= 1; nl ++) {
+            nearOct = layer + nl;
+            for(int nx = -1; nx <= 1; nx ++) {
+                nearX = x + nx;
+                for(int ny = -1; ny <= 1 && (minEx || maxEx); ny ++) {
+                    nearY = y + ny;
+                    printf("%lf ", octave[nearOct].at<double>(nearY, nearX));
+                }
+                puts("");
+            }
+        }
+    }
+    */
 
     return (minEx || maxEx);
 }
 
 void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures) {
     if(octave.size() <= 0) return ;
+
     int laySiz = octave.size();
 
     int colSiz = octave[0].cols, rowSiz = octave[0].rows;
@@ -136,21 +166,21 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     memset(minFlags, true, 2 * matrixSiz);
 
     // Detect ith image's extremas
-    for(int i = 1, rollIdx = 1; i < laySiz - 1; i ++, rollIdx ^= 1) {
+    for(int i = 1, rollIdx = 0; i < laySiz - 1; i ++, rollIdx ^= 1) {
         int nxtRollIdx = rollIdx ^ 1;
 
         memset(minFlags + nxtRollIdx * matrixSiz, true, matrixSiz);
         memset(maxFlags + nxtRollIdx * matrixSiz, true, matrixSiz);
 
-        for(int x = 1; x < rowSiz - 1; x ++) {
-            for(int y = 1; y < colSiz - 1; y ++) {
+        for(int x = 1; x < colSiz - 1; x ++) {
+            for(int y = 1; y < rowSiz - 1; y ++) {
                 int flagIdx = rollIdx * matrixSiz + x * colSiz + y;
 
                 if(!maxFlags[flagIdx] && !minFlags[flagIdx])
                     continue;
 
-                if(isExtrema(octave, i, x, y, minFlags + nxtRollIdx * matrixSiz, maxFlags + nxtRollIdx * matrixSiz)) {
-//                    printf("%d %d %d\n", )
+                if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
+                    //                    printf("%d %d %d\n", i, y, x);
                 }
             }
         }
