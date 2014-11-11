@@ -55,7 +55,7 @@ class SiftExtractor {
         Mat & operator[] (int idx) {
             return images[idx];
         }
-        void addImg(Mat & img) {
+        void addImg(const Mat & img) {
             images.push_back(img);
         }
 
@@ -66,7 +66,7 @@ class SiftExtractor {
 
 //            printf("%lf\n", sigma);
             for(int i = 1; i < layers; i++) {
-                images.push_back(images[i-1].clone());
+                images.push_back( images[i-1].clone() );
 
                 GaussianBlur(images[i-1], images[i], Size(0, 0), sigma, sigma);
 
@@ -91,7 +91,9 @@ class SiftExtractor {
                 */
             }
 
+//            printf("%d\n", images.size());
             images.erase(images.begin() + layerSiz-1);
+//            printf("w%d\n", images.size());
         }
     };
 

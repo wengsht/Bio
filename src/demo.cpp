@@ -34,6 +34,7 @@ int main() {
 
 //    Mat src = imread("./beaver.png", 0);
     Mat src = imread("./jobs.jpeg", 0);
+
 //    Mat dst = src.clone();
 
 //    imshow("demo", src);
@@ -45,7 +46,7 @@ int main() {
 //    waitKey(150000);
 
     vector<Feature> null;
-     // TODO
+   // TODO
     extractor.sift(&src, null);
 
     return 0;
