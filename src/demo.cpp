@@ -32,8 +32,17 @@ int main() {
 
     SiftExtractor extractor;
 
-    Mat src = imread("./beaver.png", 1);
-    imshow("demo", src);
+//    Mat src = imread("./beaver.png", 0);
+    Mat src = imread("./jobs.jpeg", 0);
+//    Mat dst = src.clone();
+
+//    imshow("demo", src);
+//    waitKey(1500);
+
+//    GaussianBlur( src, dst, Size(3, 3), 0, 0);
+
+//    imshow("blur", dst);
+//    waitKey(150000);
 
     vector<Feature> null;
      // TODO

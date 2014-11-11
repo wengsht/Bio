@@ -8,9 +8,9 @@ namespace bio {
 
 class point {
 public:
-    double x, y;
+    int x, y;
     point() {}
-    point(double x, double y) : x(x), y(y) {}
+    point(int x, int y) : x(x), y(y) {}
 };
 
 class Feature {
