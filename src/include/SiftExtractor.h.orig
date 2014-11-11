@@ -83,6 +83,12 @@ class SiftExtractor {
 
                 images[i] = images[i+1] - images[i];
 
+<<<<<<< HEAD
+=======
+                /*  
+>>>>>>> origin/wengsht
+                imshow("test", images[i]);
+                waitKey(1000);
             }
 
 //            printf("%d\n", images.size());
