@@ -242,3 +242,11 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 
     extremaDetect(octaves, outFeatures);
 }
+
+void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
+   for( int i=0; i < features.size(); i++){
+        
+   } 
+}
+
+

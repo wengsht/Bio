@@ -17,6 +17,7 @@
 // =====================================================================================
 
 #include <iostream>
+#include <cstdio>
 #include "feature.h"
 #include "SiftExtractor.h"
 
@@ -36,12 +37,14 @@ int main() {
     Mat src = imread("./jobs.jpeg", 0);
 
     src.convertTo(src, CV_64FC1);
+    /*
     for(int i = 0;i < src.rows; i++) {
         for(int j = 0;j < src.cols;j++) {
             printf("%lf ", src.at<double>(i, j));
         }
         puts("");
     }
+    */
 
 //    Mat dst = src.clone();
 
