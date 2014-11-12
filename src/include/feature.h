@@ -7,18 +7,32 @@
 
 namespace bio {
 
+template<class Type>
 class point {
 public:
-    int x, y;
+    Type x, y;
     point() {}
-    point(int x, int y) : x(x), y(y) {}
+    point(Type x, Type y) : x(x), y(y) {}
+};
+
+class Meta {
+    int octIdx;
+    int layerIdx;
+
+    double subLayer;
+
+    cv::Mat *img;
+
+    point<int> location;
 };
 
 class Feature {
 public:
     static int descriptor_length;
     /* Location in the image */
-    point location;
+
+    /* Location in original image */
+    point<double> originLoc;
 
     /* scale */
     double scale;
@@ -28,7 +42,7 @@ public:
 
     double descriptor[DEFAULT_DESCR_LEN];
 
-    cv::Mat *img;
+    Meta * meta;
 };
 
 }

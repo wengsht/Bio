@@ -36,15 +36,7 @@ int main() {
 //    Mat src = imread("./beaver.png", 0);
     Mat src = imread("./jobs.jpeg", 0);
 
-    src.convertTo(src, CV_64FC1);
-    /*
-    for(int i = 0;i < src.rows; i++) {
-        for(int j = 0;j < src.cols;j++) {
-            printf("%lf ", src.at<double>(i, j));
-        }
-        puts("");
-    }
-    */
+    src.convertTo(src, CV_64FC1, 1.0/255);
 
 //    Mat dst = src.clone();
 
