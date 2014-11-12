@@ -16,12 +16,13 @@ public:
 };
 
 class Meta {
+public:
     int octIdx;
     int layerIdx;
 
     double subLayer;
 
-    Mat *img;
+    cv::Mat * img;
     
     point<int> location;
 };

@@ -117,7 +117,7 @@ class SiftExtractor {
 
         // Generate Eigen points
         void extremaDetect(vector< Octave > & octaves, vector<Feature> & outFeatures);
-        void extremaDetect(Octave & octave, vector<Feature> & outFeatures);
+        void extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures);
 
 
         // check if octave[layer][y][x] is an extrema
@@ -129,10 +129,12 @@ class SiftExtractor {
         bool poorContrast(Octave & octave, int &layer, int &x, int &y);
         bool edgePointEliminate(Mat &img, int x, int y);
 
-        void addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures);
+        void addFeature(Octave &octave, int octIdx, int layer, int x, int y, vector<Feature> &outFeatures);
 
     private:
         sift_configure configures;
+
+        vector<Meta> bufferMetas;
 };
 }
 

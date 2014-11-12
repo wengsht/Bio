@@ -140,7 +140,7 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_
     return (minEx || maxEx);
 }
 
-void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures) {
+void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures) {
     if(octave.size() <= 0) return ;
 
     int laySiz = octave.size();
@@ -170,7 +170,7 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
                 if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
                     if(! shouldEliminate(octave, i, x, y)) {
 
-                        addFeature( octave, i, x, y, outFeatures );
+                        addFeature( octave, octIdx, i, x, y, outFeatures );
                     }
                 }
             }
@@ -183,10 +183,16 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     delete []minFlags;
 }
 
-void SiftExtractor::addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures) {
+void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int y, vector<Feature> &outFeatures) {
     Feature newFea;
-//    newFea.img = &(octave[layer]);
-//    newFea.location = bio::point(x, y);
+    Meta meta;
+
+    meta.img = &(octave[layer]);
+    meta.location = bio::point<int>(x, y);
+
+    bufferMetas.push_back(meta);
+
+    newFea.meta = & (bufferMetas[bufferMetas.size() - 1]);
 
     outFeatures.push_back(newFea);
 }
@@ -231,7 +237,7 @@ bool SiftExtractor::shouldEliminate(Octave &octave, int &layer, int &x, int &y) 
 void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & outFeatures) {
     int octSiz = octaves.size();
     for(int i = 0; i < octSiz; i++) {
-        extremaDetect(octaves[i], outFeatures);
+        extremaDetect(octaves[i], i, outFeatures);
     }
 }
 
