@@ -240,8 +240,13 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 }
 
 void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
-   for( int i=0; i < features.size(); i++){
+    vector< double > hist;
+    for( int feaIdx=0; feaIdx < features.size(); feaIdx++){
+        calcOriHist(features[feaIdx]);
         
+        for(int smoIdx=0; smoIdx < smoTimes; smoIdx++)
+            smoothOriHist(hist);
+
    } 
 }
 

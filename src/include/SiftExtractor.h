@@ -128,7 +128,9 @@ class SiftExtractor {
         sift_configure configures;
 
         void calcFeatureOri(vector< Feature >& features, vector< Octave > & octaves);
-
+        void calcOriHist(vector< double >& hist);
+        void smoothOriHist(vector< double >& hist );
+        void addOriFeatures(vector< Feature >& features, vector< double >& hist);
 };
 }
 
