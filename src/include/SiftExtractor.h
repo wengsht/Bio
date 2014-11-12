@@ -20,6 +20,7 @@
 
 #include <vector> 
 #include <assert.h>
+#include <map>
 
 #include "feature.h"
 
@@ -84,8 +85,9 @@ class SiftExtractor {
                 images[i] = images[i+1] - images[i];
 
                 /*  
-                imshow("test", images[i]);
+                imshow("test", 10.0 * images[i]);
                 waitKey(1000);
+
                 */
             }
 
@@ -123,7 +125,8 @@ class SiftExtractor {
         // near pixels that can not be max/min will be flagged
         // Caller should make sure that [layer][y][x] is not a pixel on the margin or outside
         bool isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_FLAG_TYPE *nxtMinFlags, EXTREMA_FLAG_TYPE* nxtMaxFlags, int rollIdx);
-        bool shouldEliminate(Octave &octave, int layer, int x, int y);
+        bool shouldEliminate(Octave &octave, int &layer, int &x, int &y);
+        bool poorContrast(Octave & octave, int &layer, int &x, int &y);
         bool edgePointEliminate(Mat &img, int x, int y);
 
         void addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures);

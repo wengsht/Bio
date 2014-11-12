@@ -35,7 +35,7 @@ int main() {
 //    Mat src = imread("./beaver.png", 0);
     Mat src = imread("./jobs.jpeg", 0);
 
-    src.convertTo(src, CV_64FC1);
+    src.convertTo(src, CV_64FC1, 1.0/255);
 
 //    Mat dst = src.clone();
 

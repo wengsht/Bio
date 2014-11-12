@@ -109,6 +109,7 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_
         for(int nx = -1; nx <= 1; nx ++) {
             nearX = x + nx;
             for(int ny = -1; ny <= 1 && (minEx || maxEx); ny ++) {
+                // don't compare with itself
                 if(!nl && !nx && !ny) continue;
 
                 nearY = y + ny;
@@ -128,8 +129,9 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_
                 if(octave[layer].at<double>(y, x) <= octave[nearOct].at<double>(nearY, nearX)) {
                     maxEx = false;
 
-                    if(nl != -1)
+                    if(nl != -1) {
                         nxtMinFlags[nearFlagIdx] = nearOct;
+                    }
                 }
             }
         }
@@ -146,6 +148,8 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     int colSiz = octave[0].cols, rowSiz = octave[0].rows;
     int matrixSiz = colSiz * rowSiz;
 
+    int margin = configures.imgMargin;
+
     EXTREMA_FLAG_TYPE * maxFlags = new EXTREMA_FLAG_TYPE[2 * matrixSiz];
     EXTREMA_FLAG_TYPE * minFlags = new EXTREMA_FLAG_TYPE[2 * matrixSiz];
 
@@ -156,8 +160,8 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     for(int i = 1, rollIdx = 0; i < laySiz - 1; i ++, rollIdx ^= 1) {
         int nxtRollIdx = rollIdx ^ 1;
 
-        for(int x = 1; x < colSiz - 1; x ++) {
-            for(int y = 1; y < rowSiz - 1; y ++) {
+        for(int x = margin; x < colSiz - margin; x ++) {
+            for(int y = margin; y < rowSiz - margin; y ++) {
                 int flagIdx = rollIdx * matrixSiz + x * rowSiz + y;
 
                 if(i == maxFlags[flagIdx] && i == minFlags[flagIdx])
@@ -172,6 +176,7 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
             }
         }
     }
+
     printf("%d\n", outFeatures.size());
 
     delete []maxFlags;
@@ -180,8 +185,8 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
 
 void SiftExtractor::addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures) {
     Feature newFea;
-    newFea.img = &(octave[layer]);
-    newFea.location = bio::point(x, y);
+//    newFea.img = &(octave[layer]);
+//    newFea.location = bio::point(x, y);
 
     outFeatures.push_back(newFea);
 }
@@ -209,7 +214,14 @@ bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
 
     return val > threshold;
 }
-bool SiftExtractor::shouldEliminate(Octave &octave, int layer, int x, int y) {
+
+bool SiftExtractor::poorContrast(Octave & octave, int &layer, int &x, int &y) {
+
+}
+
+bool SiftExtractor::shouldEliminate(Octave &octave, int &layer, int &x, int &y) {
+    if(poorContrast(octave, layer, x, y)) 
+        return true;
 
     if(edgePointEliminate(octave[layer], x, y)) 
         return true;

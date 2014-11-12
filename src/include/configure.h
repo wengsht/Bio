@@ -1,4 +1,5 @@
 
+#define IMG_MARGIN 1
 /* Octaves  */
 #define DEFAULT_BASIC_SIGMA 1.6
 
