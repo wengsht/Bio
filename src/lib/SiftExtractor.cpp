@@ -259,8 +259,10 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
     vector< double > hist;
     for( int feaIdx=0; feaIdx < features.size(); feaIdx++){
+        //calculate the orientation histogram
         calcOriHist(features[feaIdx], hist);
-        
+       
+        //smooth the orientation histogram
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
 
@@ -308,7 +310,33 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
 }
 
 
-bool calcMagOri(Mat* img, int x, int y, double mag, double ori){
+bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori){
+   if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
+        double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
+        double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
+        mag = sqrt(dx*dx + dy*dy);
+        ori = atan2(dy,dx);
+        return true;
+   }
+   else
+       return false;
+}
+
+
+double SiftExtractor::getMatValue(Mat* img, int x, int y){
+    return ((double*) img->data)[x*img->cols+y]; 
+}
+
+
+void SiftExtractor::smoothOriHist(vector< double >& hist){
+    double pre = hist[configures.histBins-1];
+
+    for(int i=0; i<configures.histBins; i++){
+        double temp = hist[i];
+        double post = (i+1 == configures.histBins)?hist[0]:hist[i+1];
+        hist[i] = 0.25*pre + 0.5*hist[i] + 0.25*post;
+        pre = temp;
+    }
     
 }
 

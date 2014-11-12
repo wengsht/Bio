@@ -136,7 +136,8 @@ class SiftExtractor {
 
         void calcFeatureOri(vector< Feature >& features, vector< Octave > & octaves);
         void calcOriHist(Feature& feature, vector< double >& hist);
-        bool calcMagOri(Mat* img, int x, int y, double mag, double ori);
+        bool calcMagOri(Mat* img, int x, int y, double& mag, double& ori);
+        double getMatValue(Mat* img, int x, int y);
         void smoothOriHist(vector< double >& hist );
         void addOriFeatures(vector< Feature >& features, vector< double >& hist);
 
