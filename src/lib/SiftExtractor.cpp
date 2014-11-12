@@ -258,7 +258,9 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 
 void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
     vector< double > hist;
-    for( int feaIdx=0; feaIdx < features.size(); feaIdx++){
+    int featPointSize = features.size();
+
+    for( int feaIdx=0; feaIdx < featPointSize; feaIdx++){
         //calculate the orientation histogram
         calcOriHist(features[feaIdx], hist);
        
@@ -266,7 +268,7 @@ void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
         
-        addOriFeatures(feature,hist);
+        addOriFeatures(features,features[feaIdx],hist);
    } 
 }
 
@@ -341,8 +343,11 @@ void SiftExtractor::smoothOriHist(vector< double >& hist){
 }
 
 
-void SiftExtractor::addOriFeatures(vector< Feature >& features, vector< double >& hist){
+void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vector< double >& hist){
     double oriDenThres;
+    int pre,post,count;
+    
+    count = 0;
 
     //get the dominant orientation
     double maxOriDen = hist[0];
@@ -351,7 +356,38 @@ void SiftExtractor::addOriFeatures(vector< Feature >& features, vector< double >
             maxOriDen = hist[i];
     }
 
-    oriDenThres = maxOriDen * oriDenThresRatio;
+    oriDenThres = maxOriDen * configures.oriDenThresRatio;
+
+    for(int i=0; i<configures.histBins; i++){
+        if(i==0)
+            pre = configures.histBins-1;
+        else
+            pre = i-1;
+
+        post = (i+1)%configures.histBins;
+
+        if(hist[i]>oriDenThres && hist[i]>hist[pre] && hist[i]>hist[post]){
+            count++;
+
+            double binOffset = (0.5* (hist[pre]-hist[post])) / (hist[pre] - 2.0*hist[i] +hist[post]);
+            double newBin = i + binOffset;
+
+            if(newBin < 0)
+                newBin = configures.histBins + newBin;
+            else if(newBin >= configures.histBins)
+                newBin = newBin - configures.histBins;
+
+            if(count > 1){
+                Feature newFeature;
+                feat.copyFeature( feat, newFeature );
+                newFeature.orient =( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
+                features.push_back(newFeature);
+            }
+            else{
+                feat.orient = ( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
+            }
+        }
+    }
 }
 
 
