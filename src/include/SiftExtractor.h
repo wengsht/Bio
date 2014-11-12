@@ -140,7 +140,7 @@ class SiftExtractor {
         double getMatValue(Mat* img, int x, int y);
         void smoothOriHist(vector< double >& hist );
         void addOriFeatures(vector< Feature >& features, vector< double >& hist);
-
+        
         vector<Meta> bufferMetas;
 };
 }

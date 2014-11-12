@@ -265,7 +265,8 @@ void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >
         //smooth the orientation histogram
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
-
+        
+        addOriFeatures(feature,hist);
    } 
 }
 
@@ -337,6 +338,20 @@ void SiftExtractor::smoothOriHist(vector< double >& hist){
         hist[i] = 0.25*pre + 0.5*hist[i] + 0.25*post;
         pre = temp;
     }
-    
 }
+
+
+void SiftExtractor::addOriFeatures(vector< Feature >& features, vector< double >& hist){
+    double oriDenThres;
+
+    //get the dominant orientation
+    double maxOriDen = hist[0];
+    for(int i=1; i<configures.histBins; i++){
+        if(hist[i] > maxOriDen)
+            maxOriDen = hist[i];
+    }
+
+    oriDenThres = maxOriDen * oriDenThresRatio;
+}
+
 

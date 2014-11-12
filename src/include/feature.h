@@ -29,6 +29,8 @@ public:
 
 class Feature {
 public:
+    void  copyFeature(Feature& feature, Feature& newFeature);
+
     static int descriptor_length;
     /* Location in the image */
 
