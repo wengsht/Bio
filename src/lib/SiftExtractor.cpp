@@ -143,7 +143,7 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_
     return (minEx || maxEx);
 }
 
-void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures) {
+void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures) {
     if(octave.size() <= 0) return ;
 
     int laySiz = octave.size();
@@ -173,7 +173,7 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
                 if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
                     if(! shouldEliminate(octave, i, x, y)) {
 
-                        addFeature( octave, i, x, y, outFeatures );
+                        addFeature( octave, octIdx, i, x, y, outFeatures );
                     }
                 }
             }
@@ -186,10 +186,16 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     delete []minFlags;
 }
 
-void SiftExtractor::addFeature(Octave &octave, int layer, int x, int y, vector<Feature> &outFeatures) {
+void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int y, vector<Feature> &outFeatures) {
     Feature newFea;
-//    newFea.img = &(octave[layer]);
-//    newFea.location = bio::point(x, y);
+    Meta meta;
+
+    meta.img = &(octave[layer]);
+    meta.location = bio::point<int>(x, y);
+
+    bufferMetas.push_back(meta);
+
+    newFea.meta = & (bufferMetas[bufferMetas.size() - 1]);
 
     outFeatures.push_back(newFea);
 }
@@ -234,7 +240,7 @@ bool SiftExtractor::shouldEliminate(Octave &octave, int &layer, int &x, int &y) 
 void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & outFeatures) {
     int octSiz = octaves.size();
     for(int i = 0; i < octSiz; i++) {
-        extremaDetect(octaves[i], outFeatures);
+        extremaDetect(octaves[i], i, outFeatures);
     }
 }
 
@@ -249,27 +255,60 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     extremaDetect(octaves, outFeatures);
 }
 
+
 void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
     vector< double > hist;
     for( int feaIdx=0; feaIdx < features.size(); feaIdx++){
         calcOriHist(features[feaIdx], hist);
         
-        for(int smoIdx=0; smoIdx < smoothTimes; smoIdx++)
+        for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
 
    } 
 }
 
+
 void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     double mag,ori,weight;
+    int bin;
    
     Mat* img = feature.meta->img;
+    
+    //feature point position
     int p_x = feature.meta->location.x;
     int p_y = feature.meta->location.y;
-    int radius = feature.scale * oriWinRadius;
-    double sigma = feature.scale * oriSigmaTimes;
-
-    hist.resize(histBins);
     
+    //sigma is to multiply a factor and get the radius
+    double sigma = feature.scale * configures.oriSigmaTimes;
+    int radius = cvRound(sigma * configures.oriWinRadius);
+    
+    //prepare for calculating the guassian weight,"gaussian denominator"
+    double gauss_denom = -2.0*sigma*sigma;
+
+    //size of histogram is according to the size of bins
+    hist.resize(configures.histBins);
+
+    //calculate the orientation within the radius
+    for(int i=-1*radius; i<=radius; i++){
+        for(int j=-1*radius; j<=radius; j++){
+            if(calcMagOri(img,p_x+i,p_y+j,mag,ori)){
+                //calculate the weight by gaussian distribution
+                weight = exp((i*i+j*j)*gauss_denom);
+                
+                //check which bin the orientation related to
+                bin = cvRound(configures.histBins*(0.5-ori/(2.0*CV_PI)));
+                bin = bin < configures.histBins?bin:0;
+                
+                //value is recalculated by multiplying weight
+                hist[bin] += mag * weight;
+            }
+        }
+    }
 
 }
+
+
+bool calcMagOri(Mat* img, int x, int y, double mag, double ori){
+    
+}
+

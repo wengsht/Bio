@@ -16,6 +16,7 @@ public:
 };
 
 class Meta {
+public:
     int octIdx;
     int layerIdx;
 
