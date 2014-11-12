@@ -250,4 +250,6 @@ void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >
    } 
 }
 
+void SiftExtractor::calcOriHist(Feature& feature){
 
+}
