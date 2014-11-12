@@ -93,7 +93,7 @@ void SiftExtractor::generateDOGPyramid(vector< Octave > & octaves) {
 }
 
 
-bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nxtMinFlags, bool* nxtMaxFlags, int rollIdx) {
+bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_FLAG_TYPE *nxtMinFlags, EXTREMA_FLAG_TYPE* nxtMaxFlags, int rollIdx) {
     int colSiz = octave[0].cols;
     int rowSiz = octave[0].rows;
     int matrixSiz = colSiz * rowSiz;
@@ -121,7 +121,7 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nx
                     minEx = false;
 
                     if(nl !=  -1) {
-                        nxtMaxFlags[nearFlagIdx] = false;
+                        nxtMaxFlags[nearFlagIdx] = nearOct;
                     }
                 }
 
@@ -129,7 +129,7 @@ bool SiftExtractor::isExtrema(Octave & octave, int layer, int x, int y, bool *nx
                     maxEx = false;
 
                     if(nl != -1)
-                        nxtMinFlags[nearFlagIdx] = false;
+                        nxtMinFlags[nearFlagIdx] = nearOct;
                 }
             }
         }
@@ -146,27 +146,21 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
     int colSiz = octave[0].cols, rowSiz = octave[0].rows;
     int matrixSiz = colSiz * rowSiz;
 
-    bool * maxFlags = new bool[2 * matrixSiz];
-    bool * minFlags = new bool[2 * matrixSiz];
+    EXTREMA_FLAG_TYPE * maxFlags = new EXTREMA_FLAG_TYPE[2 * matrixSiz];
+    EXTREMA_FLAG_TYPE * minFlags = new EXTREMA_FLAG_TYPE[2 * matrixSiz];
 
-    memset(maxFlags, true, 2 * matrixSiz);
-    memset(minFlags, true, 2 * matrixSiz);
+    memset(maxFlags, -1, 2 * matrixSiz);
+    memset(minFlags, -1, 2 * matrixSiz);
 
     // Detect ith image's extremas
     for(int i = 1, rollIdx = 0; i < laySiz - 1; i ++, rollIdx ^= 1) {
         int nxtRollIdx = rollIdx ^ 1;
 
-        memset(minFlags + nxtRollIdx * matrixSiz, true, matrixSiz);
-        memset(maxFlags + nxtRollIdx * matrixSiz, true, matrixSiz);
-
-//        imshow("we", octave[i] * 10);
-//        waitKey(1000);
-
         for(int x = 1; x < colSiz - 1; x ++) {
             for(int y = 1; y < rowSiz - 1; y ++) {
                 int flagIdx = rollIdx * matrixSiz + x * rowSiz + y;
 
-                if(!maxFlags[flagIdx] && !minFlags[flagIdx])
+                if(i == maxFlags[flagIdx] && i == minFlags[flagIdx])
                     continue;
 
                 if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
@@ -178,6 +172,7 @@ void SiftExtractor::extremaDetect(Octave & octave, vector<Feature> & outFeatures
             }
         }
     }
+    printf("%d\n", outFeatures.size());
 
     delete []maxFlags;
     delete []minFlags;
