@@ -17,6 +17,7 @@
 // =====================================================================================
 
 #include <iostream>
+#include <unistd.h>
 #include "feature.h"
 #include "SiftExtractor.h"
 
@@ -27,15 +28,25 @@ using namespace std;
 using namespace bio;
 
 using namespace cv;
-int main() {
+
+char imgFile[125] = "5.pgm";
+
+bool dealOpts(int argc, char **argv);
+
+int main(int argc, char **argv) {
+    if(!dealOpts(argc, argv))
+        return -1;
+
     cout << "Final Proj" << endl;
 
     SiftExtractor extractor;
 
-//    Mat src = imread("./beaver.png", 0);
-    Mat src = imread("./jobs.jpeg", 0);
+    //Mat src = imread("./beaver.png", 0);
+//    Mat src = imread("./jobs.jpeg", 0);
+    Mat src = imread(imgFile, 0);
 
-    src.convertTo(src, CV_64FC1, 1.0/255);
+
+//    src.convertTo(src, CV_64FC1, 1.0/255);
 
 //    Mat dst = src.clone();
 
@@ -53,3 +64,23 @@ int main() {
 
     return 0;
 } 
+
+bool dealOpts(int argc, char **argv) {
+    int c;
+    while((c = getopt(argc, argv, "hi:")) != -1) {
+        switch(c) {
+            case 'h':
+                printf("usage: \n \
+                        -i input file name\n");
+
+                return false;
+                break;
+        case 'i':
+                strcpy(imgFile, optarg);
+                break;
+            default:
+                break;
+        }
+    }
+    return true;
+}

@@ -2,6 +2,7 @@
 #define IMG_MARGIN 1
 /* Octaves  */
 #define DEFAULT_BASIC_SIGMA 1.6
+#define DEFAULT_INIT_SIGMA 0.5
 
 /* number of layers per octave */
 // Pls, don't set value higher than range(EXTREMA_FLAG_TYPE) - 1 -3
@@ -9,10 +10,20 @@
 /*  Type for layer flag  */
 #define EXTREMA_FLAG_TYPE unsigned char
 
-/* D(x), all extrema with a value less than 0.03 will be discarded */
-#define DEFAULT_EXTREMA_THRESHOLD 0.03
+/* D(x), all extrema with a value less than 0.04 will be discarded */
+#define DEFAULT_EXTREMA_THRESHOLD 0.04
 
 // r Tr^2/Det < (r+1)^2 / r
 #define DEFAULT_EDGE_POINT_THRESHOLD 10
 
 #define DEFAULT_DESCR_LEN 128
+
+#define EXTREMA_OFFSET_STEP 5
+
+#define DEFAULT_OFFSET_THRES 0.5
+
+// D(x) threshold
+#define DEFAULT_DX_VALUE_THRES 0.03
+
+// octIdx of octave with same size as original img
+#define DEFAULT_BASE_OCT_IDX 1

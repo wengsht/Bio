@@ -44,8 +44,6 @@ class SiftExtractor {
 
     class Octave {
     public:
-        double sigma;
-
         vector< Mat > images;
 
         int size() const {
@@ -58,7 +56,7 @@ class SiftExtractor {
             images.push_back(img);
         }
 
-        void generateBlurLayers(int layers) {
+        void generateBlurLayers(int layers, double *sigmas) {
             assert(images.size() >= 1);
 
             images.resize(1);
@@ -67,7 +65,7 @@ class SiftExtractor {
             for(int i = 1; i < layers; i++) {
                 images.push_back( images[i-1].clone() );
 
-                GaussianBlur(images[i-1], images[i], Size(0, 0), sigma, sigma);
+                GaussianBlur(images[i-1], images[i], Size(0, 0), sigmas[i], sigmas[i]);
 
                 /*  
                 imshow("test", images[i]);
@@ -94,6 +92,13 @@ class SiftExtractor {
 //            printf("%d\n", images.size());
             images.erase(images.begin() + layerSiz-1);
 //            printf("w%d\n", images.size());
+        }
+
+        void show() {
+            for(int i = 0;i < images.size();i++) {
+                imshow("debug", images[i]);
+                waitKey(1000);
+            }
         }
     };
 
@@ -125,11 +130,40 @@ class SiftExtractor {
         // near pixels that can not be max/min will be flagged
         // Caller should make sure that [layer][y][x] is not a pixel on the margin or outside
         bool isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_FLAG_TYPE *nxtMinFlags, EXTREMA_FLAG_TYPE* nxtMaxFlags, int rollIdx);
-        bool shouldEliminate(Octave &octave, int &layer, int &x, int &y);
-        bool poorContrast(Octave & octave, int &layer, int &x, int &y);
+        bool shouldEliminate(Octave &octave, int &layer, int &x, int &y, double *_X);
+        bool poorContrast(Octave & octave, int &layer, int &x, int &y, double *_X);
         bool edgePointEliminate(Mat &img, int x, int y);
 
-        void addFeature(Octave &octave, int octIdx, int layer, int x, int y, vector<Feature> &outFeatures);
+        void addFeature(Octave &octave, int octIdx, int layer, int x, int y, double *_X, vector<Feature> &outFeatures);
+
+        void calcJacobian(Octave &octave, int layer, int x, int y, double Jacobian[3]);
+        void calcHessian(Octave &octave, int layer, int x, int y, double Hessian[3][3]);
+
+        // _X = -Hessian^(-1) X Jacobian
+        void calcOffset(double Hessian[3][3], double Jacobian[3], double _X[3]);
+        // check if octave[layer][x][y] is an inner point( bound imgMargin)
+        inline bool innerPixel(Octave &octave, int layer, int x, int y);
+
+        bio::point<double> pixelOriMap(int octIdx, int layer, int x, int y, double *_X);
+
+        // D + 0.5 * Jacobian(D,X) * _X
+        // X = {x, y, layerIdx}
+        // _X = {_x, _y, _layerIdx}
+        double calcDxValue(Octave &octave, int X[3], double _X[3]);
+
+        // clear buffers used during feature extracting
+        void clearBuffers() {
+            bufferMetas.clear();
+        }
+
+        static void show(Mat *img, vector<Feature> & features) {
+            for(int i = 0;i < features.size(); i++) {
+            circle(*img, Point(features[i].originLoc.x, features[i].originLoc.y), 2, Scalar(66,66,0));
+            }
+            imshow("debug", *img);
+            waitKey(10000);
+        }
+        Mat &siftFormatImg(Mat *img);
 
     private:
         sift_configure configures;
