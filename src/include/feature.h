@@ -20,11 +20,11 @@ public:
     int octIdx;
     int layerIdx;
 
-    double subLayer;
-
-    cv::Mat *img;
-
+    cv::Mat * img;
     point<int> location;
+
+    /* scale */
+    double scale;
 };
 
 class Feature {
@@ -36,9 +36,6 @@ public:
 
     /* Location in original image */
     point<double> originLoc;
-
-    /* scale */
-    double scale;
 
     /*  orientation */
     double orient;

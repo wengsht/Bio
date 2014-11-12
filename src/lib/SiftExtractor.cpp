@@ -37,8 +37,6 @@ SiftExtractor::~SiftExtractor() {}
 void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
     octaves.clear();
 
-    Mat tmp;
-
     int rowSiz = img->rows, colSiz = img->cols;
 
     int octaveSiz = log( std::min(rowSiz, colSiz) ) / log(2.0) - 1;
@@ -49,20 +47,27 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
     // Sub Sampling
     octaves.push_back( Octave() );
 
-    octaves[0].addImg( img->clone() );
-    octaves[0].sigma = configures.basicSigma;
-    octaves[0].generateBlurLayers(S + 3);
 
     double k = pow(2.0, 1.0 / S);
     
+    double sigmas[S + 3];
+    sigmas[0] = configures.basicSigma;
+    sigmas[1] = sigmas[0] * sqrt(k * k - 1);
+    for(i = 2;i < S+3;i++) 
+        sigmas[i] = sigmas[i-1] * k;
+
+    Mat baseImg;
+    pyrUp( *img, baseImg, Size(img->cols*2, img->rows*2));
+
+    double baseSigma = sqrt(pow(sigmas[0], 2.0) - pow(configures.initSigma * 2.0, 2.0));
+
+    GaussianBlur(baseImg, baseImg, Size(0, 0), baseSigma, baseSigma);
+
+    octaves[0].addImg( baseImg );
+    octaves[0].generateBlurLayers(S + 3, sigmas);
 
     for(i = 1;i < octaveSiz; i++) {
         octaves.push_back( Octave() );
-
-        if(i == 1) 
-            octaves[i].sigma = octaves[i-1].sigma * sqrt(k * k - 1);
-        else 
-            octaves[i].sigma = octaves[i-1].sigma * k;
 
         // 当前oct的第一层是由上一个oct的倒数第三张图片复制来的
         Mat &prevImg = octaves[i-1][S];
@@ -72,7 +77,7 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
 
         pyrDown( prevImg, octaves[i][0], Size(prevImg.cols/2, prevImg.rows/2));
 
-        octaves[i].generateBlurLayers(S + 3);
+        octaves[i].generateBlurLayers(S + 3, sigmas);
 
         /*   
         imshow("= =", prevImg);
@@ -171,9 +176,10 @@ void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> &
                     continue;
 
                 if(isExtrema(octave, i, x, y, minFlags, maxFlags, rollIdx)) {
-                    if(! shouldEliminate(octave, i, x, y)) {
-
-                        addFeature( octave, octIdx, i, x, y, outFeatures );
+                    int accurateLay = i, accurateX = x, accurateY = y;
+                    double _X[3];
+                    if(! shouldEliminate(octave, accurateLay, accurateX, accurateY, _X)) {
+                        addFeature( octave, octIdx, accurateLay, accurateX, accurateY, _X, outFeatures);
                     }
                 }
             }
@@ -186,22 +192,38 @@ void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> &
     delete []minFlags;
 }
 
-void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int y, vector<Feature> &outFeatures) {
+bio::point<double> SiftExtractor::pixelOriMap(int octIdx, int layer, int x, int y, double *_X) {
+    bio::point<double> oriPixel;
+
+    oriPixel.x = (x + _X[0]) * pow(2.0, octIdx - configures.baseOctIdx);
+    oriPixel.y = (y + _X[1]) * pow(2.0, octIdx - configures.baseOctIdx);
+
+    return oriPixel;
+}
+
+void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int y, double *_X, vector<Feature> &outFeatures) {
     Feature newFea;
     Meta meta;
 
     meta.img = &(octave[layer]);
     meta.location = bio::point<int>(x, y);
+    meta.octIdx = octIdx;
+    meta.layerIdx = layer;
+
+    meta.scale = configures.basicSigma * pow(2.0, (1.0 * layer + _X[2]) / configures.innerLayerPerOct);
+
+//    meta.subLayer = _X[2];
 
     bufferMetas.push_back(meta);
 
     newFea.meta = & (bufferMetas[bufferMetas.size() - 1]);
+    newFea.originLoc = pixelOriMap(octIdx, layer, x, y, _X);
 
     outFeatures.push_back(newFea);
 }
 
 bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
-    static double threshold = (configures.r + 1) * (configures.r + 1) / configures.r;
+    static double threshold = (configures.r + 1.0) * (configures.r + 1) / configures.r;
 
     if(! configures.doEliminateEdgeResponse) 
         return false;
@@ -224,16 +246,155 @@ bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
     return val > threshold;
 }
 
-bool SiftExtractor::poorContrast(Octave & octave, int &layer, int &x, int &y) {
+void SiftExtractor::calcJacobian(Octave &octave, int layer, int x, int y, double Jacobian[3]) {
+    double & Dx = Jacobian[0], \
+           & Dy = Jacobian[1], \
+           & Dz = Jacobian[2];
 
+    Dx = octave[layer].at<double> (y, x+1) - octave[layer].at<double> (y, x-1); 
+    Dy = octave[layer].at<double> (y+1, x) - octave[layer].at<double> (y-1, x); 
+    Dz = octave[layer+1].at<double> (y, x) - octave[layer-1].at<double> (y, x); 
+
+    Dx /= 2.0; Dy /= 2.0; Dz /= 2.0;
 }
 
-bool SiftExtractor::shouldEliminate(Octave &octave, int &layer, int &x, int &y) {
-    if(poorContrast(octave, layer, x, y)) 
+void SiftExtractor::calcHessian(Octave &octave, int layer, int x, int y, double Hessian[3][3]) {
+    double &Dxx = Hessian[0][0], \
+           &Dyy = Hessian[1][1], \
+           &Dzz = Hessian[2][2], \
+           &Dxy = Hessian[0][1], \
+           &Dxz = Hessian[0][2], \
+           &Dyx = Hessian[1][0], \
+           &Dyz = Hessian[1][2], \
+           &Dzx = Hessian[2][0], \
+           &Dzy = Hessian[2][1];
+
+    Dxx = octave[layer].at<double> (y, x+1) + \
+          octave[layer].at<double> (y, x-1) - \
+          2 * octave[layer].at<double> (y, x);
+    Dyy = octave[layer].at<double> (y+1, x) + \
+          octave[layer].at<double> (y-1, x) - \
+          2 * octave[layer].at<double> (y, x);
+    Dzz = octave[layer+1].at<double> (y, x) + \
+          octave[layer-1].at<double> (y, x) - \
+          2 * octave[layer].at<double> (y, x);
+
+    Dxy = ( octave[layer].at<double>(y+1, x+1) - \
+            octave[layer].at<double>(y+1, x-1) - \
+            octave[layer].at<double>(y-1, x+1) + \
+            octave[layer].at<double>(y-1, x-1)) / 4.0;
+
+    Dxz = ( octave[layer+1].at<double>(y, x+1) - \
+            octave[layer+1].at<double>(y, x-1) - \
+            octave[layer-1].at<double>(y, x+1) + \
+            octave[layer-1].at<double>(y, x-1)) / 4.0;
+
+    Dyz = ( octave[layer+1].at<double>(y+1, x) - \
+            octave[layer-1].at<double>(y+1, x) - \
+            octave[layer+1].at<double>(y-1, x) + \
+            octave[layer-1].at<double>(y-1, x)) / 4.0;
+
+    Dyx = Dxy; Dzx = Dxz; Dzy = Dyz;
+}
+
+void SiftExtractor::calcOffset(double Hessian[3][3], double Jacobian[3], double _X[3]) {
+    Mat HeMat = Mat(3, 3, CV_64FC1, Hessian);
+    Mat JaMat = Mat(3, 1, CV_64FC1, Jacobian);
+
+    Mat _XMat = - (HeMat.inv() * JaMat);
+
+    _X[0] = _XMat.at<double> (0, 0);
+    _X[1] = _XMat.at<double> (1, 0);
+    _X[2] = _XMat.at<double> (2, 0);
+}
+
+inline 
+bool SiftExtractor::innerPixel(Octave &octave, int layer, int x, int y) {
+    int margin = configures.imgMargin;
+
+    if(layer < 1 || layer >= octave.size() - 1) 
+        return false;
+    if(x < margin || x >= octave[layer].cols - margin)
+        return false;
+    if(y < margin || y >= octave[layer].rows - margin)
+        return false;
+
+    return true;
+}
+
+bool SiftExtractor::poorContrast(Octave & octave, int &layer, int &x, int &y, double *_X) {
+    int laySiz = octave.size();
+
+    double &offX = _X[0], \
+           &offY = _X[1], 
+           &offZ = _X[2];
+
+    double Hessian[3][3], Jacobian[3];
+
+    // Default: 0.5
+    double thres = configures.offsetThres;
+
+    int step = configures.extreOffsetStep;
+    while(step --) {
+        calcJacobian(octave, layer, x, y, Jacobian);
+        calcHessian(octave, layer, x, y, Hessian);
+
+        // _X = -Hessian^(-1) * Jacobian
+        calcOffset(Hessian, Jacobian, _X);
+
+        if(fabs(offX) <= thres && fabs(offY) <= thres && fabs(offZ) <= thres)
+            break;
+
+        x += cvRound(offX);
+        y += cvRound(offY);
+        layer += cvRound(offZ);
+
+        if(! innerPixel(octave, layer, x, y)) 
+            return true;
+    }
+
+    int X[3] = {x, y, layer};
+
+    double DxValue = calcDxValue(octave, X, _X);
+
+    if(fabs(DxValue) < configures.DxValueThres / configures.innerLayerPerOct) 
         return true;
+
+    return false;
+}
+
+double SiftExtractor::calcDxValue(Octave &octave, int X[3], double _X[3]) {
+    double Jacobian[3];
+
+    calcJacobian(octave, X[2], X[0], X[1], Jacobian);
+
+    Mat JaMat = Mat(1, 3, CV_64FC1, Jacobian);
+    Mat _XMat = Mat(3, 1, CV_64FC1, _X);
+
+    /*  
+    for(int i = 0;i < 3; i++) {
+        printf("%lf ", JaMat.at<double>(i));
+    }
+    puts("");
+    for(int i = 0;i < 3; i++) {
+        printf("%lf ", _XMat.at<double>(i));
+    }
+    puts("");
+    printf("%lf\n", octave[X[2]].at<double>(X[1], X[0]));
+    */
+
+    Mat tmp = JaMat * _XMat;
+    return octave[X[2]].at<double>(X[1], X[0]) + 0.5 * tmp.at<double>(0, 0);
+}
+
+bool SiftExtractor::shouldEliminate(Octave &octave, int &layer, int &x, int &y, double *_X) {
+    if(poorContrast(octave, layer, x, y, _X))  {
+        return true;
+    }
 
     if(edgePointEliminate(octave[layer], x, y)) 
         return true;
+
     return false;
 }
 
@@ -244,8 +405,24 @@ void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & 
     }
 }
 
+Mat &SiftExtractor::siftFormatImg(Mat *img) {
+    Mat temp;
+    Mat result = Mat(img->rows, img->cols, CV_64FC1);
+    if(img->channels() == 1)
+        temp = *img;
+    else {
+        temp = Mat(img->rows, img->cols, CV_8UC1);
+        cvtColor( *img, temp, CV_BGR2GRAY );
+    }
+
+    temp.convertTo(*img, CV_64FC1, 1.0/255);
+    return *img;
+}
+
 void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     outFeatures.clear();
+
+    *img = siftFormatImg(img);
 
     // Building Pyramid
     vector< Octave > octaves;
@@ -253,6 +430,12 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     generatePyramid( img, octaves );
 
     extremaDetect(octaves, outFeatures);
+    
+    calcFeatureOri(outFeatures, octaves);
+
+    show(img, outFeatures);
+    // endding
+    clearBuffers();
 }
 
 
@@ -284,7 +467,7 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     int p_y = feature.meta->location.y;
     
     //sigma is to multiply a factor and get the radius
-    double sigma = feature.scale * configures.oriSigmaTimes;
+    double sigma = feature.meta->scale * configures.oriSigmaTimes;
     int radius = cvRound(sigma * configures.oriWinRadius);
     
     //prepare for calculating the guassian weight,"gaussian denominator"
