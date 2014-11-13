@@ -203,7 +203,8 @@ bio::point<double> SiftExtractor::pixelOriMap(int octIdx, int layer, int x, int 
 
 void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int y, double *_X, vector<Feature> &outFeatures) {
     Feature newFea;
-    Meta meta;
+    Meta *newMeta = new Meta;
+    Meta &meta = *newMeta;
 
     meta.img = &(octave[layer]);
     meta.location = bio::point<int>(x, y);
@@ -214,9 +215,9 @@ void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int
 
 //    meta.subLayer = _X[2];
 
-    bufferMetas.push_back(meta);
+    bufferMetas.push_back(newMeta);
 
-    newFea.meta = & (bufferMetas[bufferMetas.size() - 1]);
+    newFea.meta = newMeta;
     newFea.originLoc = pixelOriMap(octIdx, layer, x, y, _X);
 
     outFeatures.push_back(newFea);
@@ -433,6 +434,8 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     
     calcFeatureOri(outFeatures, octaves);
 
+//    printf("%d\n", outFeatures[0].meta->location.x);
+
     show(img, outFeatures);
     // endding
     clearBuffers();
@@ -451,10 +454,9 @@ void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
         
-        addOriFeatures(features,features[feaIdx],hist);
+        addOriFeatures(features, features[feaIdx],hist);
    } 
 }
-
 
 void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     double mag,ori,weight;
@@ -469,20 +471,21 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     //sigma is to multiply a factor and get the radius
     double sigma = feature.meta->scale * configures.oriSigmaTimes;
     int radius = cvRound(sigma * configures.oriWinRadius);
-    
+
     //prepare for calculating the guassian weight,"gaussian denominator"
-    double gauss_denom = -2.0*sigma*sigma;
+    double gauss_denom = -1.0/(2.0*sigma*sigma);
 
     //size of histogram is according to the size of bins
-    hist.resize(configures.histBins);
+    hist.resize(configures.histBins, 0);
 
     //calculate the orientation within the radius
     for(int i=-1*radius; i<=radius; i++){
         for(int j=-1*radius; j<=radius; j++){
             if(calcMagOri(img,p_x+i,p_y+j,mag,ori)){
+//                printf("%lf\n", ori);
                 //calculate the weight by gaussian distribution
                 weight = exp((i*i+j*j)*gauss_denom);
-                
+
                 //check which bin the orientation related to
                 bin = cvRound(configures.histBins*(0.5-ori/(2.0*CV_PI)));
                 bin = bin < configures.histBins?bin:0;
@@ -500,6 +503,7 @@ bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori)
    if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
+//        printf("%lf %lf\n", dx, dy);
         mag = sqrt(dx*dx + dy*dy);
         ori = atan2(dy,dx);
         return true;
@@ -510,7 +514,8 @@ bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori)
 
 
 double SiftExtractor::getMatValue(Mat* img, int x, int y){
-    return ((double*) img->data)[x*img->cols+y]; 
+    return img->at<double>(y, x);
+//    return ((double*) img->data)[x*(img->cols)+y]; 
 }
 
 
@@ -534,12 +539,14 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
 
     //get the dominant orientation
     double maxOriDen = hist[0];
-    for(int i=1; i<configures.histBins; i++){
+    for(int i=1; i < configures.histBins; i++){
         if(hist[i] > maxOriDen)
             maxOriDen = hist[i];
+        
     }
 
     oriDenThres = maxOriDen * configures.oriDenThresRatio;
+//    printf("%lf %lf\n",maxOriDen, oriDenThres);
 
     for(int i=0; i<configures.histBins; i++){
         if(i==0)
@@ -549,11 +556,12 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
 
         post = (i+1)%configures.histBins;
 
-        if(hist[i]>oriDenThres && hist[i]>hist[pre] && hist[i]>hist[post]){
+        if(hist[i] > oriDenThres && hist[i]>hist[pre] && hist[i]>hist[post]){
             count++;
 
             double binOffset = (0.5* (hist[pre]-hist[post])) / (hist[pre] - 2.0*hist[i] +hist[post]);
             double newBin = i + binOffset;
+//            printf("%lf\n", newBin);
 
             if(newBin < 0)
                 newBin = configures.histBins + newBin;
@@ -561,6 +569,7 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
                 newBin = newBin - configures.histBins;
 
             if(count > 1){
+                continue;
                 Feature newFeature;
                 feat.copyFeature( feat, newFeature );
                 newFeature.orient =( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;

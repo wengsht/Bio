@@ -33,7 +33,7 @@
 #define DEFAULT_OFFSET_THRES 0.5
 
 // D(x) threshold
-#define DEFAULT_DX_VALUE_THRES 0.03
+#define DEFAULT_DX_VALUE_THRES 0.08
 
 // octIdx of octave with same size as original img
 #define DEFAULT_BASE_OCT_IDX 1

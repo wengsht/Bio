@@ -21,8 +21,10 @@
 #include <vector> 
 #include <assert.h>
 #include <map>
+#include <cmath>
 
 #include "feature.h"
+#include "define.h"
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -153,15 +155,33 @@ class SiftExtractor {
 
         // clear buffers used during feature extracting
         void clearBuffers() {
+            for(int i = 0;i < bufferMetas.size(); i++)
+                delete bufferMetas[i];
             bufferMetas.clear();
         }
 
         static void show(Mat *img, vector<Feature> & features) {
+            Mat tmp = Mat(img->size(), CV_8UC3);
+            
+            img->convertTo(tmp, CV_8UC1, 255);
+            cvtColor(tmp, tmp, CV_GRAY2RGB);
+
             for(int i = 0;i < features.size(); i++) {
-            circle(*img, Point(features[i].originLoc.x, features[i].originLoc.y), 2, Scalar(66,66,0));
+                double scale = 6 * features[i].meta->scale;
+                double orient = features[i].orient;
+
+                Point p1 = Point(features[i].originLoc.x, features[i].originLoc.y);
+                Point p2 = Point(p1.x + scale * cos(orient),\
+                        p1.y + scale * sin(orient));
+
+
+                circle(tmp, p1, 2, Scalar(0,0,255));
+
+                line(tmp, p1, p2, Scalar(255,0,0), 1, 8);
             }
-            imshow("debug", *img);
-            waitKey(10000);
+
+            imshow("debug", tmp);
+            waitKey(10000000);
         }
         Mat &siftFormatImg(Mat *img);
 
@@ -175,7 +195,7 @@ class SiftExtractor {
         void smoothOriHist(vector< double >& hist );
         void addOriFeatures(vector<Feature>& features, Feature& feat, vector< double >& hist);
         
-        vector<Meta> bufferMetas;
+        vector<Meta *> bufferMetas;
 };
 }
 
