@@ -37,7 +37,7 @@
 #define DEFAULT_DESCRIPTOR_SCALE_ADJUST 3
 
 // D(x) threshold
-#define DEFAULT_DX_VALUE_THRES 0.03
+#define DEFAULT_DX_VALUE_THRES 0.04
 
 // octIdx of octave with same size as original img
 #define DEFAULT_BASE_OCT_IDX 1
