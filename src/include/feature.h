@@ -25,6 +25,8 @@ public:
 
     /* scale */
     double scale;
+
+    double globalScale;
 };
 
 class Feature {

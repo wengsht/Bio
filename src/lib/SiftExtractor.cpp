@@ -57,9 +57,19 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
         sigmas[i] = sigmas[i-1] * k;
 
     Mat baseImg;
-    pyrUp( *img, baseImg, Size(img->cols*2, img->rows*2));
+    double baseSigma;
 
-    double baseSigma = sqrt(pow(sigmas[0], 2.0) - pow(configures.initSigma * 2.0, 2.0));
+    if(configures.baseOctIdx == 1) {
+        pyrUp( *img, baseImg, Size((img->cols)*2, (img->rows)*2));
+
+        baseSigma = sqrt(pow(sigmas[0], 2.0) - pow(configures.initSigma * 2.0, 2.0));
+    }
+
+    else {
+        baseImg = img->clone();
+
+        baseSigma = sqrt(pow(sigmas[0], 2.0) - pow(configures.initSigma, 2.0));
+    }
 
     GaussianBlur(baseImg, baseImg, Size(0, 0), baseSigma, baseSigma);
 
@@ -69,13 +79,12 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
     for(i = 1;i < octaveSiz; i++) {
         octaves.push_back( Octave() );
 
-        // 当前oct的第一层是由上一个oct的倒数第三张图片复制来的
+        // Sth image of prev octave 
         Mat &prevImg = octaves[i-1][S];
-
     
         octaves[i].addImg( prevImg.clone() );
 
-        pyrDown( prevImg, octaves[i][0], Size(prevImg.cols/2, prevImg.rows/2));
+        pyrDown( prevImg, octaves[i][0], Size((prevImg.cols+1)/2, (prevImg.rows+1)/2));
 
         octaves[i].generateBlurLayers(S + 3, sigmas);
 
@@ -212,6 +221,7 @@ void SiftExtractor::addFeature(Octave &octave, int octIdx, int layer, int x, int
     meta.layerIdx = layer;
 
     meta.scale = configures.basicSigma * pow(2.0, (1.0 * layer + _X[2]) / configures.innerLayerPerOct);
+    meta.globalScale = meta.scale * pow(2.0, octIdx);
 
 //    meta.subLayer = _X[2];
 
@@ -354,6 +364,9 @@ bool SiftExtractor::poorContrast(Octave & octave, int &layer, int &x, int &y, do
             return true;
     }
 
+    if(fabs(offX) > thres || fabs(offY) > thres || fabs(offZ) > thres)
+        return true;
+
     int X[3] = {x, y, layer};
 
     double DxValue = calcDxValue(octave, X, _X);
@@ -371,18 +384,6 @@ double SiftExtractor::calcDxValue(Octave &octave, int X[3], double _X[3]) {
 
     Mat JaMat = Mat(1, 3, CV_64FC1, Jacobian);
     Mat _XMat = Mat(3, 1, CV_64FC1, _X);
-
-    /*  
-    for(int i = 0;i < 3; i++) {
-        printf("%lf ", JaMat.at<double>(i));
-    }
-    puts("");
-    for(int i = 0;i < 3; i++) {
-        printf("%lf ", _XMat.at<double>(i));
-    }
-    puts("");
-    printf("%lf\n", octave[X[2]].at<double>(X[1], X[0]));
-    */
 
     Mat tmp = JaMat * _XMat;
     return octave[X[2]].at<double>(X[1], X[0]) + 0.5 * tmp.at<double>(0, 0);

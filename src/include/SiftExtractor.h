@@ -63,7 +63,6 @@ class SiftExtractor {
 
             images.resize(1);
 
-//            printf("%lf\n", sigma);
             for(int i = 1; i < layers; i++) {
                 images.push_back( images[i-1].clone() );
 
@@ -167,7 +166,7 @@ class SiftExtractor {
             cvtColor(tmp, tmp, CV_GRAY2RGB);
 
             for(int i = 0;i < features.size(); i++) {
-                double scale = 6 * features[i].meta->scale;
+                double scale = features[i].meta->globalScale;
                 double orient = features[i].orient;
 
                 Point p1 = Point(features[i].originLoc.x, features[i].originLoc.y);

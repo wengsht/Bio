@@ -3,3 +3,4 @@ build/
 *.swo
 *.orig
 tags
+*.DS_Store
