@@ -471,10 +471,10 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     int radius = cvRound(sigma * configures.oriWinRadius);
     
     //prepare for calculating the guassian weight,"gaussian denominator"
-    double gauss_denom = -2.0*sigma*sigma;
+    double gauss_denom = -1.0/(2.0*sigma*sigma);
 
     //size of histogram is according to the size of bins
-    hist.resize(configures.histBins);
+    hist.resize(configures.histBins,0);
 
     //calculate the orientation within the radius
     for(int i=-1*radius; i<=radius; i++){
@@ -497,7 +497,7 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
 
 
 bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori){
-   if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
+   if(x>0 && (x < (img->cols)-1) && y>0 && (y < (img->rows)-1)){
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
         mag = sqrt(dx*dx + dy*dy);
@@ -574,3 +574,64 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
 }
 
 
+void SiftExtractor::calcDescriptor(vector<Feature>& features){
+   vector< vector< vector<double> > > hist;
+   
+   for(int i=0; i<features.size(); i++){
+        calcDescHist(features[i], hist);
+   }
+}
+
+
+void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
+   double orient = feature.orient;
+   double octave = feature.meta->scale;
+   double cosOri = cos(orient);
+   double sinOri = sin(orient);
+   double curSigma = 0.5 * configures.descWinWidth;
+   double subWidth = feature.meta->scale * configures.descScaleAdjust; 
+
+   int radius = (subWidth*sqrt(2.0)*(configures.descWinWidth+1))/2.0 + 0.5;
+
+    //initialize the histogram
+    hist.erase(hist.begin(),hist.end());
+    for(int i=0; i<configures.descWinWidth; i++){
+        hist.resize(configures.descWinWidth,0.0);
+        for(int j=0; j<configures.histBins; j++)_{
+            hist[i][j].resize(configures.histBins,0.0);
+        }
+    }
+    
+    double subOri,subMag;
+    for(int i=-1*radius; i<=radius; i++){
+        for(int j=-1*radius; j<=radius; j++){
+            double xRotate = (cosOri*j - sinOri*i)/subWidth;
+            double yROtate = (sinOri*j + cosOri*i)/subWidth;
+            
+            double xIdx = xRotate + configures.descWinWidth/2 -0.5;
+            double yIdx = yRotate + configures.descWinWidth/2 -0.5;
+           
+            if(xIdx>-1.0 && xIdx<configures.descWinWidth && yIdx>-1.0 && yIdx<configures.descWinWidth){
+                int posX = feature.meta->location.x+j;
+                int posY = feature.meta->location.y+i;
+                if(calcMagOri(feature.meta->img, posX, posY, subMag, subOri)){
+                   subOri = CV_PI-subOri-orient;
+                   
+                   //TO TEST
+                   double remain = subOri%(2*CV_PI);
+                   if(remain<0)
+                       subOri += (2*CV_PI);
+                   else if(remain >= (2*CV_PI))
+                       subOri -= (2*CV_PI);
+                   
+                   double resultIdx = subOri * (configures.histBins/(2*CV_PI));
+                   double weight = exp((-1.0/(2*curSigma*curSigma))*(xRotate*xRotate + yRotate*yRotate));
+                   
+                   //TODO cha zhi yun suan
+                   //---------------------------
+                }
+            }
+        }
+    }
+
+}

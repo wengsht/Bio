@@ -175,6 +175,10 @@ class SiftExtractor {
         void smoothOriHist(vector< double >& hist );
         void addOriFeatures(vector<Feature>& features, Feature& feat, vector< double >& hist);
         
+        void calcDescriptor(vector<Feature>& features);
+        void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist);
+        //void setDescriptor(const Feature feature, const vector< vector< vector<double> > > hist);
+
         vector<Meta> bufferMetas;
 };
 }
