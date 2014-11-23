@@ -32,6 +32,9 @@
 using namespace std;
 using namespace cv;
 
+/// \brief = =
+///
+/// 
 namespace bio {
 class SiftExtractor {
     struct sift_configure {

@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <assert.h>
 #include <stdio.h>
+#include "tool.h"
 
 using namespace bio;
 using namespace std;
@@ -88,10 +89,10 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
 
         octaves[i].generateBlurLayers(S + 3, sigmas);
 
-        /*   
-        imshow("= =", prevImg);
-        waitKey(1000);
-        */
+        /** \brief  
+         * imshow("= =", prevImg);
+         * waitKey(1000);
+         */
     }
 
     generateDOGPyramid(octaves);
@@ -195,7 +196,7 @@ void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> &
         }
     }
 
-    printf("%d\n", outFeatures.size());
+//    printf("%d\n", outFeatures.size());
 
     delete []maxFlags;
     delete []minFlags;
@@ -412,6 +413,8 @@ void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & 
     for(int i = 0; i < octSiz; i++) {
         extremaDetect(octaves[i], i, outFeatures);
     }
+
+    Log("{SiftExtractor} Extract [%d] points", outFeatures.size());
 }
 
 Mat &SiftExtractor::siftFormatImg(Mat *img) {
@@ -444,7 +447,7 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
-    show(img, outFeatures);
+//    show(img, outFeatures);
     // endding
     clearBuffers();
 }

@@ -4,14 +4,16 @@
 #include "define.h"
 #include "configure.h"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <iostream>
 
 namespace bio {
 
 template<class Type>
 class point {
 public:
-    Type x, y;
-    point() {}
+    Type x, y; /*!< Point coordinates<x,y> */
+/* !< Detailed description after the member */ 
+    point() {} 
     point(Type x, Type y) : x(x), y(y) {}
 };
 
@@ -32,6 +34,39 @@ public:
 class Feature {
 public:
     void  copyFeature(Feature& feature, Feature& newFeature);
+
+    /**
+     * \brief dump feature's info
+     * \param[in] Out output stream
+     *
+     * */
+    void dump(std::ostream & Out);
+
+    /**
+     * \brief return length of descriptor
+     *
+     * */
+    int size() const;
+
+    /**
+     * \brief return idx-th descriptor
+     *
+     * */
+    double & operator [] (int idx);
+
+    /**
+     * \brief return idx-th descriptor
+     *
+     * */
+    const double & operator [] (int idx) const;
+
+    /**
+     *
+     * \brief Euclidean Distance of two feature
+     * \return Euclidean Distance
+     *
+     * */
+    double operator - (const Feature & b);
 
     static int descriptor_length;
     /* Location in the image */
