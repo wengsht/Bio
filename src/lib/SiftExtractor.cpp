@@ -242,15 +242,22 @@ bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
     double Dxx, Dyy, Dxy, Tr, Det;
 
     //Hessian
-    Dxx = img.at<double>(y, x + 1) - img.at<double>(y, x) * 2 + img.at<double>(y, x-1);
-    Dyy = img.at<double>(y+1, x) - img.at<double>(y, x) * 2 + img.at<double>(y-1, x);
-    Dxy = img.at<double>(y+1, x+1) - img.at<double>(y+1, x-1) - img.at<double>(y-1, x+1) + img.at<double>(y-1, x-1);
+    Dxx = img.at<double>(y, x + 1) - \
+          img.at<double>(y, x) * 2 + \
+          img.at<double>(y, x-1);
+    Dyy = img.at<double>(y+1, x) - \
+          img.at<double>(y, x) * 2 + \
+          img.at<double>(y-1, x);
+    Dxy = img.at<double>(y+1, x+1) - \
+          img.at<double>(y+1, x-1) - \
+          img.at<double>(y-1, x+1) + \
+          img.at<double>(y-1, x-1);
     Dxy /= 4.0;
 
     Tr = Dxx + Dyy;
     Det = Dxx * Dyy - Dxy * Dxy;
 
-    if(0.0 == Det) return true;
+    if(0.0 >= Det) return true;
 
     double val = Tr * Tr / Det;
 

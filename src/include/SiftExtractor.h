@@ -63,14 +63,17 @@ class SiftExtractor {
 
             images.resize(1);
 
+//                imshow("test0", images[0]);
+
             for(int i = 1; i < layers; i++) {
                 images.push_back( images[i-1].clone() );
 
                 GaussianBlur(images[i-1], images[i], Size(0, 0), sigmas[i], sigmas[i]);
 
                 /*  
-                imshow("test", images[i]);
-                waitKey(1000);
+                char name[10];
+                sprintf(name, "test%d", i);
+                imshow(name, images[i]);
                 */
             }
         }
@@ -176,7 +179,7 @@ class SiftExtractor {
 
                 circle(tmp, p1, 2, Scalar(0,0,255));
 
-                line(tmp, p1, p2, Scalar(255,0,0), 1, 8);
+//                line(tmp, p1, p2, Scalar(255,0,0), 1, 8);
             }
 
             imshow("debug", tmp);
