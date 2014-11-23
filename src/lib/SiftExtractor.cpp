@@ -570,13 +570,14 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
                 newBin = newBin - configures.histBins;
 
             if(count > 1){
-                continue;
+               // continue;
                 Feature newFeature;
                 feat.copyFeature( feat, newFeature );
                 newFeature.orient =( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
                 features.push_back(newFeature);
             }
             else{
+                //This feature is already in the vector Features,we do not need to push_back it
                 feat.orient = ( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
             }
         }
@@ -588,27 +589,28 @@ void SiftExtractor::calcDescriptor(vector<Feature>& features){
    vector< vector< vector<double> > > hist;
    
    for(int i=0; i<features.size(); i++){
-        calcDescHist(features[i], hist);
+       calcDescHist(features[i], hist);
    }
 }
 
 
-void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
+void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
    double orient = feature.orient;
    double octave = feature.meta->scale;
    double cosOri = cos(orient);
    double sinOri = sin(orient);
-   double curSigma = 0.5 * configures.descWinWidth;
+   double curSigma = 0.5 * (configures.descWinWidth);
    double subWidth = feature.meta->scale * configures.descScaleAdjust; 
 
+   //The radius of required image field to calculate
    int radius = (subWidth*sqrt(2.0)*(configures.descWinWidth+1))/2.0 + 0.5;
 
     //initialize the histogram
     hist.erase(hist.begin(),hist.end());
     for(int i=0; i<configures.descWinWidth; i++){
         hist.resize(configures.descWinWidth,0.0);
-        for(int j=0; j<configures.histBins; j++)_{
-            hist[i][j].resize(configures.histBins,0.0);
+        for(int j=0; j<configures.descWinWidth; j++){
+            hist[i][j].resize(configures.descHistBins,0.0);
         }
     }
     
@@ -616,7 +618,7 @@ void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
     for(int i=-1*radius; i<=radius; i++){
         for(int j=-1*radius; j<=radius; j++){
             double xRotate = (cosOri*j - sinOri*i)/subWidth;
-            double yROtate = (sinOri*j + cosOri*i)/subWidth;
+            double yRotate = (sinOri*j + cosOri*i)/subWidth;
             
             double xIdx = xRotate + configures.descWinWidth/2 -0.5;
             double yIdx = yRotate + configures.descWinWidth/2 -0.5;
@@ -628,13 +630,12 @@ void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
                    subOri = CV_PI-subOri-orient;
                    
                    //TO TEST
-                   double remain = subOri%(2*CV_PI);
-                   if(remain<0)
-                       subOri += (2*CV_PI);
-                   else if(remain >= (2*CV_PI))
-                       subOri -= (2*CV_PI);
+                  while(subOri < 0.0)
+                      subOri += 2*CV_PI;
+                  while(subOri >= 2*CV_PI)
+                      subOri -= 2*CV_PI;
                    
-                   double resultIdx = subOri * (configures.histBins/(2*CV_PI));
+                   double resultIdx = subOri * (configures.descHistBins/(2*CV_PI));
                    double weight = exp((-1.0/(2*curSigma*curSigma))*(xRotate*xRotate + yRotate*yRotate));
                    
                    //TODO cha zhi yun suan
