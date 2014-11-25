@@ -90,7 +90,6 @@ int main(int argc, char **argv) {
 
     srand(-1);
     random(null);
-
     random(null2);
 
     matcher.setup( null );
@@ -103,8 +102,9 @@ int main(int argc, char **argv) {
     Feature & feature = matcher.match( null2[0] );
 
     double testVal = 10000000000;
-    for(int i  =0;i < null.size() ;i++)
+    for(int i  =0;i < null2.size() ;i++)
         testVal = fmin(testVal, null2[0] - null[i]);
+
     feature.dump(cout);
     null2[0].dump(cout);
     printf("kdTree: %lf\n", feature - null2[0]);

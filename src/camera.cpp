@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
         return -1;
 
     VideoCapture cap(0);
-    cap.set( CV_CAP_PROP_FRAME_WIDTH,640);
-    cap.set( CV_CAP_PROP_FRAME_HEIGHT,480 );
+    cap.set( CV_CAP_PROP_FRAME_WIDTH,320);
+    cap.set( CV_CAP_PROP_FRAME_HEIGHT,240 );
 
     SiftExtractor extractor;
     vector<Feature> null;
