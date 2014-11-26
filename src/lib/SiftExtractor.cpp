@@ -590,6 +590,7 @@ void SiftExtractor::calcDescriptor(vector<Feature>& features){
    
    for(int i=0; i<features.size(); i++){
        calcDescHist(features[i], hist);
+       hist2Desc(hist, features[i]);
    }
 }
 
@@ -608,13 +609,14 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
     //initialize the histogram
     hist.erase(hist.begin(),hist.end());
     for(int i=0; i<configures.descWinWidth; i++){
-        hist.resize(configures.descWinWidth,0.0);
+        hist.resize(configures.descWinWidth);
         for(int j=0; j<configures.descWinWidth; j++){
             hist[i][j].resize(configures.descHistBins,0.0);
         }
     }
     
     double subOri,subMag;
+    double CV_PI2 = CV_PI * 2;
     for(int i=-1*radius; i<=radius; i++){
         for(int j=-1*radius; j<=radius; j++){
             double xRotate = (cosOri*j - sinOri*i)/subWidth;
@@ -629,20 +631,95 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
                 if(calcMagOri(feature.meta->img, posX, posY, subMag, subOri)){
                    subOri = CV_PI-subOri-orient;
                    
-                   //TO TEST
+                  // make subOri inside [0,2PI)
                   while(subOri < 0.0)
-                      subOri += 2*CV_PI;
-                  while(subOri >= 2*CV_PI)
-                      subOri -= 2*CV_PI;
+                      subOri += CV_PI2;
+                  while(subOri >= CV_PI2)
+                      subOri -= CV_PI2;
                    
                    double resultIdx = subOri * (configures.descHistBins/(2*CV_PI));
                    double weight = exp((-1.0/(2*curSigma*curSigma))*(xRotate*xRotate + yRotate*yRotate));
                    
-                   //TODO cha zhi yun suan
-                   //---------------------------
+                  double weiMag = subMag*weight;
+                  interpHistEntry(hist,xIdx,yIdx,resultIdx,weiMag);
                 }
             }
         }
     }
 
 }
+
+//Interpolation Operation
+void SiftExtractor::interpHistEntry(vector< vector< vector<double> > >& hist, double xIdx, double yIdx, double resultIdx, double weiMag){
+    double d_r, d_c, d_o,value;
+    int r0, c0, o0, rb, cb, ob;
+
+    r0 = cvFloor( xIdx );
+    c0 = cvFloor( yIdx );
+    o0 = cvFloor( resultIdx );
+    d_r = xIdx - r0;
+    d_c = yIdx - c0;
+    d_o = resultIdx - o0;
+    
+    for(int r=0; r<=1; r++){
+        rb = r0+r;
+        if(rb>=0 && rb<configures.descWinWidth){
+           for(int c=0; c<=1; c++){
+               cb = c0+c;
+               if(cb>=0 && cb<configures.descWinWidth){
+                   for(int o=0; o<=1; o++){
+                       value = weiMag * ((r==0)? (1.0-d_r):d_r);
+                       value = value * ((c==0)? (1.0-d_c):d_c);
+                       value = value * ((o==0)? (1.0-d_o):d_o);
+                       ob = (o0+0)%configures.descHistBins;
+                       hist[rb][cb][ob] = value;
+                   }
+               }
+           } 
+        }
+    }
+}
+
+
+void SiftExtractor::hist2Desc(vector< vector< vector<double> > >& hist, Feature& feature){
+    int feaIdx = 0;
+    for(int r=0; r<configures.descWinWidth; r++){
+        for(int c=0; c<configures.descWinWidth; c++){
+            for(int o=0; o<configures.descHistBins; o++){
+                feature.descriptor[feaIdx] = hist[r][c][o];
+                feaIdx++;
+            }
+        }
+    }
+    assert(feaIdx == DEFAULT_DESCR_LEN);
+    
+
+}
+
+void SiftExtractor::furtherProcess(Feature& feature){
+    normalize(feature);
+    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+        if(feature.descriptor[i]>configures.descMagThre)
+            feature.descriptor[i]=configures.descMagThre;
+    }
+    normalize(feature);
+    
+    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+        int value = configures.descIntFac*feature.descriptor[i];
+        feature.descriptor[i]=((value>255)?255:value);
+    }
+}
+
+
+void SiftExtractor::normalize(Feature& feature){
+   double temp,sumInv,sumSquare = 0.0;
+   for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+       temp = feature.descriptor[i];
+       sumSquare += temp*temp;
+   }
+   sumInv = 1.0/sqrt(sumSquare);
+   for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+       feature.descriptor[i] *= sumInv;
+   }
+}
+

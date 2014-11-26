@@ -197,6 +197,10 @@ class SiftExtractor {
         void calcDescriptor(vector<Feature>& features);
         void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist);
         void interpHistEntry(vector< vector< vector<double> > >& hist,double xIdx, double yIdx, double resultIdx, double weiMag);
+        void hist2Desc(vector< vector< vector<double> > >& hist, Feature& feature);
+        void furtherProcess(Feature& feature);
+        void normalize(Feature& feature);
+        
         //void setDescriptor(const Feature feature, const vector< vector< vector<double> > > hist);
 
         vector<Meta *> bufferMetas;
