@@ -16,11 +16,13 @@
 // =====================================================================================
 
 #include "SiftExtractor.h"
+#include <iostream>
 #include <vector>
 #include <cstring>
 #include <cstdlib>
 #include <assert.h>
 #include <stdio.h>
+#include <algorithm>
 
 using namespace bio;
 using namespace std;
@@ -435,6 +437,9 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     
     calcFeatureOri(outFeatures, octaves);
 
+    calcDescriptor(outFeatures);
+    
+    sort(outFeatures.begin(),outFeatures.end(),comp);
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
     show(img, outFeatures);
@@ -721,5 +726,9 @@ void SiftExtractor::normalize(Feature& feature){
    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
        feature.descriptor[i] *= sumInv;
    }
+}
+
+bool SiftExtractor::comp(const Feature& f1, const Feature& f2){
+    return f1.meta->scale < f2.meta->scale;
 }
 

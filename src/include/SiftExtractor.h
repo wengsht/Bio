@@ -200,7 +200,8 @@ class SiftExtractor {
         void hist2Desc(vector< vector< vector<double> > >& hist, Feature& feature);
         void furtherProcess(Feature& feature);
         void normalize(Feature& feature);
-        
+        static bool comp(const Feature& f1, const Feature& f2);
+
         //void setDescriptor(const Feature feature, const vector< vector< vector<double> > > hist);
 
         vector<Meta *> bufferMetas;
