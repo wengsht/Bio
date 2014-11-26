@@ -447,7 +447,7 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
 
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
-//    show(img, outFeatures);
+    show(img, outFeatures);
     // endding
     clearBuffers();
 }
@@ -510,7 +510,7 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
 }
 
 
-bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori){
+bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori) {
    if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
@@ -528,7 +528,6 @@ double SiftExtractor::getMatValue(Mat* img, int x, int y){
     return img->at<double>(y, x);
 //    return ((double*) img->data)[x*(img->cols)+y]; 
 }
-
 
 void SiftExtractor::smoothOriHist(vector< double >& hist){
     double pre = hist[configures.histBins-1];
@@ -592,5 +591,3 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
         }
     }
 }
-
-
