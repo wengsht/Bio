@@ -18,7 +18,7 @@
 
 #include <cstring>
 #include <vector>
-#include "Feature.h"
+#include "feature.h"
 #include <queue>
 #include <iostream>
 

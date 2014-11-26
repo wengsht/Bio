@@ -12,7 +12,7 @@ template<class Type>
 class point {
 public:
     Type x, y; /*!< Point coordinates<x,y> */
-/* !< Detailed description after the member */ 
+               /* !< Detailed description after the member */ 
     point() {} 
     point(Type x, Type y) : x(x), y(y) {}
 };

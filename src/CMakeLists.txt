@@ -9,20 +9,24 @@ SET(OPENCV_CPP_SAMPLES_REQUIRED_DEPS opencv_core opencv_imgproc opencv_flann
 set(DEMO demo)
 set(SIFT sift)
 set(CAMERA camera)
+set(MATCH_DEMO match2img)
 
 add_executable(${DEMO} ${DEMO}.cpp)
 add_executable(${CAMERA} ${CAMERA}.cpp)
+add_executable(${MATCH_DEMO} ${MATCH_DEMO}.cpp)
 
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
 add_subdirectory ("${PROJECT_SOURCE_DIR}/lib")
 
 target_link_libraries(${DEMO} ${SIFT})
-
 target_link_libraries(${DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 target_link_libraries(${CAMERA} ${SIFT})
-
 target_link_libraries(${CAMERA} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
+
+target_link_libraries(${MATCH_DEMO} ${SIFT})
+target_link_libraries(${MATCH_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
+
 
 

@@ -16,11 +16,13 @@
 // =====================================================================================
 
 #include "SiftExtractor.h"
+#include <iostream>
 #include <vector>
 #include <cstring>
 #include <cstdlib>
 #include <assert.h>
 #include <stdio.h>
+#include <algorithm>
 #include "tool.h"
 
 using namespace bio;
@@ -445,9 +447,12 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     
     calcFeatureOri(outFeatures, octaves);
 
+    calcDescriptor(outFeatures);
+    
+    sort(outFeatures.begin(),outFeatures.end(),comp);
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
-    show(img, outFeatures);
+//    show(img, outFeatures);
     // endding
     clearBuffers();
 }
@@ -465,11 +470,11 @@ void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
         
-        addOriFeatures(features, features[feaIdx],hist);
+        addOriFeatures(features, features[feaIdx], hist);
    } 
 }
 
-void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
+void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist) {
     double mag,ori,weight;
     int bin;
    
@@ -484,6 +489,7 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
     int radius = cvRound(sigma * configures.oriWinRadius);
 
     //prepare for calculating the guassian weight,"gaussian denominator"
+//    printf("%lf\n", sigma);
     double gauss_denom = -1.0/(2.0*sigma*sigma);
 
     //size of histogram is according to the size of bins
@@ -503,15 +509,18 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist){
                 
                 //value is recalculated by multiplying weight
                 hist[bin] += mag * weight;
+
+                assert(bin < hist.size());
             }
         }
     }
-
 }
 
 
-bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori) {
-   if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
+//bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori) {
+//   if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
+bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori){
+   if(x>0 && (x < (img->cols)-1) && y>0 && (y < (img->rows)-1)){
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
 //        printf("%lf %lf\n", dx, dy);
@@ -529,7 +538,7 @@ double SiftExtractor::getMatValue(Mat* img, int x, int y){
 //    return ((double*) img->data)[x*(img->cols)+y]; 
 }
 
-void SiftExtractor::smoothOriHist(vector< double >& hist){
+void SiftExtractor::smoothOriHist(vector< double >& hist) {
     double pre = hist[configures.histBins-1];
 
     for(int i=0; i<configures.histBins; i++){
@@ -537,6 +546,8 @@ void SiftExtractor::smoothOriHist(vector< double >& hist){
         double post = (i+1 == configures.histBins)?hist[0]:hist[i+1];
         hist[i] = 0.25*pre + 0.5*hist[i] + 0.25*post;
         pre = temp;
+
+        assert(i < hist.size());
     }
 }
 
@@ -558,7 +569,7 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
     oriDenThres = maxOriDen * configures.oriDenThresRatio;
 //    printf("%lf %lf\n",maxOriDen, oriDenThres);
 
-    for(int i=0; i<configures.histBins; i++){
+    for(int i=0; i<configures.histBins; i++) {
         if(i==0)
             pre = configures.histBins-1;
         else
@@ -579,15 +590,161 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
                 newBin = newBin - configures.histBins;
 
             if(count > 1){
-                continue;
-                Feature newFeature;
-                feat.copyFeature( feat, newFeature );
+               // continue;
+                Feature newFeature = feat;
+//                feat.copyFeature( feat, newFeature );
                 newFeature.orient =( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
                 features.push_back(newFeature);
             }
             else{
+                //This feature is already in the vector Features,we do not need to push_back it
                 feat.orient = ( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
             }
         }
     }
 }
+
+
+void SiftExtractor::calcDescriptor(vector<Feature>& features){
+   vector< vector< vector<double> > > hist;
+   
+   for(int i=0; i<features.size(); i++){
+       calcDescHist(features[i], hist);
+       hist2Desc(hist, features[i]);
+   }
+}
+
+
+void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist){
+   double orient = feature.orient;
+   double octave = feature.meta->scale;
+   double cosOri = cos(orient);
+   double sinOri = sin(orient);
+   double curSigma = 0.5 * (configures.descWinWidth);
+   double subWidth = feature.meta->scale * configures.descScaleAdjust; 
+
+   //The radius of required image field to calculate
+   int radius = (subWidth*sqrt(2.0)*(configures.descWinWidth+1))/2.0 + 0.5;
+
+    //initialize the histogram
+    hist.erase(hist.begin(),hist.end());
+    hist.resize(configures.descWinWidth);
+    for(int i=0; i<configures.descWinWidth; i++){
+        hist[i].resize(configures.descWinWidth);
+        for(int j=0; j<configures.descWinWidth; j++){
+            hist[i][j].resize(configures.descHistBins,0.0);
+        }
+    }
+    
+    double subOri,subMag;
+    double CV_PI2 = CV_PI * 2;
+    for(int i=-1*radius; i<=radius; i++){
+        for(int j=-1*radius; j<=radius; j++){
+            double xRotate = (cosOri*j - sinOri*i)/subWidth;
+            double yRotate = (sinOri*j + cosOri*i)/subWidth;
+            
+            double xIdx = xRotate + configures.descWinWidth/2 -0.5;
+            double yIdx = yRotate + configures.descWinWidth/2 -0.5;
+           
+            if(xIdx>-1.0 && xIdx<configures.descWinWidth && yIdx>-1.0 && yIdx<configures.descWinWidth){
+                int posX = feature.meta->location.x+j;
+                int posY = feature.meta->location.y+i;
+                if(calcMagOri(feature.meta->img, posX, posY, subMag, subOri)){
+                   subOri = CV_PI-subOri-orient;
+                   
+                  // make subOri inside [0,2PI)
+                  while(subOri < 0.0)
+                      subOri += CV_PI2;
+                  while(subOri >= CV_PI2)
+                      subOri -= CV_PI2;
+                   
+                   double resultIdx = subOri * (configures.descHistBins/(2*CV_PI));
+                   double weight = exp((-1.0/(2*curSigma*curSigma))*(xRotate*xRotate + yRotate*yRotate));
+                   
+                  double weiMag = subMag*weight;
+                  interpHistEntry(hist,xIdx,yIdx,resultIdx,weiMag);
+                }
+            }
+        }
+    }
+
+}
+
+//Interpolation Operation
+void SiftExtractor::interpHistEntry(vector< vector< vector<double> > >& hist, double xIdx, double yIdx, double resultIdx, double weiMag){
+    double d_r, d_c, d_o,value;
+    int r0, c0, o0, rb, cb, ob;
+
+    r0 = cvFloor( xIdx );
+    c0 = cvFloor( yIdx );
+    o0 = cvFloor( resultIdx );
+    d_r = xIdx - r0;
+    d_c = yIdx - c0;
+    d_o = resultIdx - o0;
+    
+    for(int r=0; r<=1; r++){
+        rb = r0+r;
+        if(rb>=0 && rb<configures.descWinWidth){
+           for(int c=0; c<=1; c++){
+               cb = c0+c;
+               if(cb>=0 && cb<configures.descWinWidth){
+                   for(int o=0; o<=1; o++){
+                       value = weiMag * ((r==0)? (1.0-d_r):d_r);
+                       value = value * ((c==0)? (1.0-d_c):d_c);
+                       value = value * ((o==0)? (1.0-d_o):d_o);
+                       ob = (o0+0)%configures.descHistBins;
+                       hist[rb][cb][ob] = value;
+                   }
+               }
+           } 
+        }
+    }
+}
+
+
+void SiftExtractor::hist2Desc(vector< vector< vector<double> > >& hist, Feature& feature){
+    int feaIdx = 0;
+    for(int r=0; r<configures.descWinWidth; r++){
+        for(int c=0; c<configures.descWinWidth; c++){
+            for(int o=0; o<configures.descHistBins; o++){
+                feature.descriptor[feaIdx] = hist[r][c][o];
+                feaIdx++;
+            }
+        }
+    }
+    assert(feaIdx == DEFAULT_DESCR_LEN);
+    
+
+}
+
+void SiftExtractor::furtherProcess(Feature& feature){
+    normalize(feature);
+    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+        if(feature.descriptor[i]>configures.descMagThre)
+            feature.descriptor[i]=configures.descMagThre;
+    }
+    normalize(feature);
+    
+    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+        int value = configures.descIntFac*feature.descriptor[i];
+        feature.descriptor[i]=((value>255)?255:value);
+    }
+}
+
+
+void SiftExtractor::normalize(Feature& feature){
+   double temp,sumInv,sumSquare = 0.0;
+   for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+       temp = feature.descriptor[i];
+       sumSquare += temp*temp;
+   }
+   sumInv = 1.0/sqrt(sumSquare);
+   for(int i=0; i<DEFAULT_DESCR_LEN; i++){
+       feature.descriptor[i] *= sumInv;
+   }
+}
+
+bool SiftExtractor::comp(const Feature& f1, const Feature& f2){
+    return f1.meta->globalScale < f2.meta->globalScale;
+}
+

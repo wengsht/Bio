@@ -9,6 +9,14 @@ int Feature::descriptor_length = DEFAULT_DESCR_LEN;
 
 void Feature::copyFeature(Feature& feature, Feature& newFeature){
     newFeature = feature;
+//    printf("%p %p\n", feature.meta, newFeature.meta);
+    
+    /*  
+    newFeature.dump(std::cout);
+    std::cout << "---->\n";
+    feature.dump(std::cout);
+    */
+//    newFeature = feature;
 }
 
 void Feature::dump(std::ostream & Out) {

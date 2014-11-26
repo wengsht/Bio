@@ -278,7 +278,7 @@ double KDTree::findMedian( KDNode * node, int k ) {
         tmpVec[pointSiz ++] = val;
     }
 
-    Log("Clac median %d points", pointSiz);
+//    Log("Clac median %d points", pointSiz);
 
     int medianIdx = (pointSiz - 1) / 2;
     std::nth_element(tmpVec.begin(), tmpVec.begin() + medianIdx, tmpVec.begin() + pointSiz);

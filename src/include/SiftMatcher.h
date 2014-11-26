@@ -17,7 +17,7 @@
 #define _AUTOGUARD_SiftMatcher_H_
 
 #include "kdTree.h"
-#include "Feature.h"
+#include "feature.h"
 #include <vector>
 
 
