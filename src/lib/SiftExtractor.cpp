@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <algorithm>
+#include "tool.h"
 
 using namespace bio;
 using namespace std;
@@ -90,10 +91,10 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
 
         octaves[i].generateBlurLayers(S + 3, sigmas);
 
-        /*   
-        imshow("= =", prevImg);
-        waitKey(1000);
-        */
+        /** \brief  
+         * imshow("= =", prevImg);
+         * waitKey(1000);
+         */
     }
 
     generateDOGPyramid(octaves);
@@ -197,7 +198,7 @@ void SiftExtractor::extremaDetect(Octave & octave, int octIdx, vector<Feature> &
         }
     }
 
-    printf("%d\n", outFeatures.size());
+//    printf("%d\n", outFeatures.size());
 
     delete []maxFlags;
     delete []minFlags;
@@ -244,15 +245,22 @@ bool SiftExtractor::edgePointEliminate(Mat &img, int x, int y) {
     double Dxx, Dyy, Dxy, Tr, Det;
 
     //Hessian
-    Dxx = img.at<double>(y, x + 1) - img.at<double>(y, x) * 2 + img.at<double>(y, x-1);
-    Dyy = img.at<double>(y+1, x) - img.at<double>(y, x) * 2 + img.at<double>(y-1, x);
-    Dxy = img.at<double>(y+1, x+1) - img.at<double>(y+1, x-1) - img.at<double>(y-1, x+1) + img.at<double>(y-1, x-1);
+    Dxx = img.at<double>(y, x + 1) - \
+          img.at<double>(y, x) * 2 + \
+          img.at<double>(y, x-1);
+    Dyy = img.at<double>(y+1, x) - \
+          img.at<double>(y, x) * 2 + \
+          img.at<double>(y-1, x);
+    Dxy = img.at<double>(y+1, x+1) - \
+          img.at<double>(y+1, x-1) - \
+          img.at<double>(y-1, x+1) + \
+          img.at<double>(y-1, x-1);
     Dxy /= 4.0;
 
     Tr = Dxx + Dyy;
     Det = Dxx * Dyy - Dxy * Dxy;
 
-    if(0.0 == Det) return true;
+    if(0.0 >= Det) return true;
 
     double val = Tr * Tr / Det;
 
@@ -407,6 +415,8 @@ void SiftExtractor::extremaDetect(vector< Octave > & octaves, vector<Feature> & 
     for(int i = 0; i < octSiz; i++) {
         extremaDetect(octaves[i], i, outFeatures);
     }
+
+    Log("{SiftExtractor} Extract [%d] points", outFeatures.size());
 }
 
 Mat &SiftExtractor::siftFormatImg(Mat *img) {
@@ -442,7 +452,7 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     sort(outFeatures.begin(),outFeatures.end(),comp);
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
-    show(img, outFeatures);
+//    show(img, outFeatures);
     // endding
     clearBuffers();
 }

@@ -47,3 +47,5 @@
 
 // octIdx of octave with same size as original img
 #define DEFAULT_BASE_OCT_IDX 1
+
+#define KD_MAX_BACKTRACK 250

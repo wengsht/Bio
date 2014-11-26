@@ -1,6 +1,6 @@
 // =====================================================================================
 // 
-//       Filename:  SiftExtractor.cpp
+//       Filename:  camera.cpp
 // 
 //    Description:  
 // 
@@ -17,23 +17,23 @@
 // =====================================================================================
 
 #include <iostream>
-<<<<<<< HEAD
+#include <fstream>
 #include <cstdio>
-=======
 #include <unistd.h>
->>>>>>> origin/wengsht
 #include "feature.h"
 #include "SiftExtractor.h"
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+
+#include "SiftMatcher.h"
+#include <cstdlib>
+
 using namespace std;
 
 using namespace bio;
 
 using namespace cv;
-
-char imgFile[125] = "5.pgm";
 
 bool dealOpts(int argc, char **argv);
 
@@ -41,46 +41,36 @@ int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
         return -1;
 
-    cout << "Final Proj" << endl;
+    VideoCapture cap(0);
+    cap.set( CV_CAP_PROP_FRAME_WIDTH,320);
+    cap.set( CV_CAP_PROP_FRAME_HEIGHT,240 );
 
     SiftExtractor extractor;
-
-    //Mat src = imread("./beaver.png", 0);
-//    Mat src = imread("./jobs.jpeg", 0);
-    Mat src = imread(imgFile, 0);
-
-
-//    src.convertTo(src, CV_64FC1, 1.0/255);
-
-//    Mat dst = src.clone();
-
-//    imshow("demo", src);
-//    waitKey(1500);
-
-//    GaussianBlur( src, dst, Size(3, 3), 0, 0);
-
-//    imshow("blur", dst);
-//    waitKey(150000);
-
     vector<Feature> null;
-   // TODO
-    extractor.sift(&src, null);
+
+    while (1)
+    {
+        Mat frame;
+        cap>>frame;
+
+        extractor.sift(& frame, null);
+
+        imshow( "Capture",frame);
+        if( waitKey(30)>=0 ) break;
+    }
 
     return 0;
 } 
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "hi:")) != -1) {
+    while((c = getopt(argc, argv, "h")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
-                        -i input file name\n");
+                        \n");
 
                 return false;
-                break;
-        case 'i':
-                strcpy(imgFile, optarg);
                 break;
             default:
                 break;
