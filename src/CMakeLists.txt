@@ -10,10 +10,14 @@ set(DEMO demo)
 set(SIFT sift)
 set(CAMERA camera)
 set(MATCH_DEMO match2img)
+set(DATABASE_DEMO match2db)
+
+set(IMG_DIR img)
 
 add_executable(${DEMO} ${DEMO}.cpp)
 add_executable(${CAMERA} ${CAMERA}.cpp)
 add_executable(${MATCH_DEMO} ${MATCH_DEMO}.cpp)
+add_executable(${DATABASE_DEMO} ${DATABASE_DEMO}.cpp)
 
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
@@ -28,5 +32,7 @@ target_link_libraries(${CAMERA} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 target_link_libraries(${MATCH_DEMO} ${SIFT})
 target_link_libraries(${MATCH_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
+target_link_libraries(${DATABASE_DEMO} ${SIFT})
+target_link_libraries(${DATABASE_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
-
+file(COPY ${PROJECT_SOURCE_DIR}/../${IMG_DIR}/ DESTINATION ${PROJECT_BINARY_DIR}/${IMG_DIR}/)

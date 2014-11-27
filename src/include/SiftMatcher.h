@@ -19,6 +19,7 @@
 #include "kdTree.h"
 #include "feature.h"
 #include <vector>
+#include "ImageSet.h"
 
 
 namespace bio {
@@ -33,22 +34,31 @@ class SiftMatcher {
         ~SiftMatcher();
 
         /**
-         * \brief setup KDTree for a set of features
-         * \param[in] features "datebase"
+         * \brief setup KDTree
          *
          * */
-        void setup(std::vector<Feature> & features);
+        void setup();
+        void loadDir(const char *dirName);
+        void loadFile(const char *fileName);
+        void loadFeatures(std::vector<Feature> & inputFeat);
 
         /**
          * \brief match a input point, return the nearest point in "database"
          * \param[in] features "datebase"
          *
          * */
-        Feature & match(Feature & input);
+        std::pair<Feature *, Feature *> match(Feature & input);
 
         void dumpDot(std::ostream &dotOut);
 
+        /**
+         * \brief 
+         *
+         * */
+        std::vector< Feature > & getFeatures();
+
     private:
+        ImageSet images;
 
         KDTree kdTree;
 };

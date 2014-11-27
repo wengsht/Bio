@@ -1,0 +1,8 @@
+#ifdef IMG_SUFFIX
+
+IMG_SUFFIX("png")
+IMG_SUFFIX("jpg")
+IMG_SUFFIX("jpeg")
+
+#undef IMG_SUFFIX
+#endif

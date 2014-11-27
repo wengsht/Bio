@@ -76,9 +76,10 @@ class KDTree {
         /**
          * \brief match a input point, return the nearest point in "database"
          * \param[in] features "datebase"
+         * \return first: nearest point second: sec nearest point
          *
          * */
-        Feature & bbfNearest( Feature & input );
+        std::pair<Feature *,Feature *> bbfNearest( Feature & input );
 
         /**
          * \brief You should call this function before this object was destroy!
@@ -151,10 +152,11 @@ class KDTree {
          * \param[in] input input feature 
          * \param[in] bestEuDist best Eu distance before search this node
          * \param[in] bestIdx index of bestEuDist
-         * \return bestIdx of bestEuDist after search this node
+         * \return bestIdx+second BestIdx of bestEuDist after search this node
+         *         
          *
          * */
-        int kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx);
+        std::pair<int, int> kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx);
 
         /**
          *

@@ -57,3 +57,37 @@ double Feature::operator - (const Feature & b)  {
     }
     return sqrt(res);
 }
+
+void Feature::setContrainer(void *container) {
+    this->container = container;
+}
+
+void * Feature::getContrainer() {
+    return this->container;
+}
+
+void Feature::load(std::istream & IN) {
+    IN >> Feature::descriptor_length;
+
+    IN >> originLoc.x >> originLoc.y;
+
+    IN >> orient;
+
+    int idx;
+    for(idx = 0; idx < Feature::descriptor_length; idx ++) 
+        IN >> descriptor[idx];
+}
+
+void Feature::store(std::ostream & OUT) {
+    OUT << " " << Feature::descriptor_length;
+
+    OUT << " " << originLoc.x << " " << originLoc.y;
+
+    OUT << " " << orient;
+
+    int idx;
+    for(idx = 0; idx < Feature::descriptor_length; idx ++) 
+        OUT << " " << descriptor[idx];
+}
+
+

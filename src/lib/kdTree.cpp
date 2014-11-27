@@ -93,14 +93,15 @@ void KDTree::split( KDNode * parent ) {
     split(right);
 }
 
-Feature & KDTree::bbfNearest( Feature & input ) {
+std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
+
     backTrackTimes = KD_MAX_BACKTRACK;
     while(!backTrack_heap.empty())
         backTrack_heap.pop();
 
-    int nearestIdx = kd_dfs( root, input, INF, NIL_HEAD );
+    std::pair<int, int> idxs = kd_dfs( root, input, INF, NIL_HEAD, INF, NIL_HEAD );
 
-    return (*features)[nearestIdx];
+    return std::make_pair( &((*features)[idxs.first]),&((*features)[idxs.second]))  ;
 }
 
 KDNode * KDTree::getNextCandid(double bestEuDist) {
@@ -120,9 +121,9 @@ KDNode * KDTree::getNextCandid(double bestEuDist) {
     return NULL;
 }
 
-int KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx) {
+std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx) {
     if(!node) 
-        return bestIdx;
+        return std::make_pair(bestIdx, secBestIdx);
 
     std::vector<Feature> & features = *(this->features);
 
@@ -131,17 +132,22 @@ int KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestId
 
         double tmpDist = (features[nodeIdx] - input);
 
-        if(tmpDist < bestEuDist) {
-            bestEuDist = tmpDist;
+        if(tmpDist < secBestEuDist) {
+            secBestEuDist = tmpDist;
 
-            bestIdx = nodeIdx;
+            secBestIdx = nodeIdx;
+        }
+        if(secBestEuDist < bestEuDist) {
+            std::swap(secBestEuDist, bestEuDist);
+            std::swap(bestIdx, secBestIdx);
         }
 
         KDNode * candid = getNextCandid(bestEuDist);
-        if(NULL == candid) 
-            return bestIdx;
 
-        return kd_dfs(candid, input, bestEuDist, bestIdx);
+        if(NULL == candid) 
+            return std::make_pair(bestIdx, secBestIdx);
+
+        return kd_dfs(candid, input, bestEuDist, bestIdx, secBestEuDist, secBestIdx);
     }
 
     const int &k = node->k;
@@ -164,7 +170,7 @@ int KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestId
 
     addCandid( candidNode, fabs(val - median) );
 
-    return kd_dfs(nextNode, input, bestEuDist, bestIdx);
+    return kd_dfs(nextNode, input, bestEuDist, bestIdx, secBestEuDist, secBestIdx);
 }
 
 void KDTree::addCandid(KDNode * node, double val) {

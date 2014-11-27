@@ -1,6 +1,6 @@
 // =====================================================================================
 // 
-//       Filename:  democ.cpp
+//       Filename:  match2db.cpp
 // 
 //    Description:  
 // 
@@ -36,8 +36,8 @@ using namespace bio;
 
 using namespace cv;
 
-char templateFile[125] = "5.pgm";
-char inputFile[125] = "jobs.jpeg";
+char templateDir[MAX_FILE_NAME_LEN] = "./img";
+char inputFile[MAX_FILE_NAME_LEN] = "jobs.jpeg";
 
 double matchThres = DEFAULT_MATCH_THRESHOLD;
 
@@ -53,37 +53,22 @@ int main(int argc, char **argv) {
 
     SiftExtractor extractor;
 
-    Mat tempImg = imread(templateFile, 0);
     Mat inputImg = imread(inputFile, 0);
 
-    vector<Feature> templateFeats;
     vector<Feature> inputFeats;
 
-    extractor.sift(&tempImg, templateFeats, (void *)(&tempImg));
     extractor.sift(&inputImg, inputFeats);
 
     SiftMatcher matcher;
 
-    matcher.loadFeatures(templateFeats);
+    matcher.loadDir(templateDir);
     matcher.setup();
-
-    int dist = 50;
-    Mat combineMat;
-    combine(combineMat, inputImg, tempImg, dist);
 
     int idx;
     for(idx = 0; idx < inputFeats.size(); idx ++) {
-        Feature & matchFeat = *((matcher.match( inputFeats[idx] )).first);
+        pair<Feature *, Feature *> matchs = (matcher.match( inputFeats[idx] ));
 
-        if(matchFeat - inputFeats[idx] >= matchThres)
-            continue;
-
-        linkCombine(combineMat, 0, inputImg.cols + dist, inputFeats[idx], matchFeat);
     }
-
-    imshow("Sift Match Demo", combineMat);
-    waitKey(10000);
-
     return 0;
 } 
 
@@ -94,13 +79,13 @@ bool dealOpts(int argc, char **argv) {
             case 'h':
                 printf("usage: \n \
                         -i input file name\n \
-                        -t template file name\n \
+                        -t template template Dir \n \
                         -b match threshold(KD TREE) \n");
 
                 return false;
                 break;
         case 't':
-                strcpy(templateFile, optarg);
+                strcpy(templateDir, optarg);
                 break;
         case 'i':
                 strcpy(inputFile, optarg);

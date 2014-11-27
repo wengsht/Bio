@@ -25,16 +25,34 @@ SiftMatcher::SiftMatcher() {
 
 SiftMatcher::~SiftMatcher() {
     kdTree.close();
+    images.close();
 }
 
-void SiftMatcher::setup(std::vector<Feature> & features) {
-    kdTree.buildTree( features );
+void SiftMatcher::setup() {
+    kdTree.buildTree( images.feat_database );
 }
 
-Feature & SiftMatcher::match(Feature & input) {
+
+std::pair<Feature *, Feature *> SiftMatcher::match(Feature & input) {
     return kdTree.bbfNearest( input );
 }
 
 void SiftMatcher::dumpDot(std::ostream &dotOut) {
     kdTree.dumpDot(dotOut);
+}
+
+void SiftMatcher::loadDir(const char *dirName) {
+    images.loadTemplates( dirName );
+}
+
+void SiftMatcher::loadFile(const char *fileName) {
+    images.loadTemplate( fileName );
+}
+
+void SiftMatcher::loadFeatures(std::vector<Feature> & inputFeat) {
+    images.loadFeatures(inputFeat);
+}
+
+std::vector< Feature > & SiftMatcher::getFeatures() {
+    return images.feat_database;
 }

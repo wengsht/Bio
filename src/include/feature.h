@@ -33,6 +33,7 @@ public:
 
 class Feature {
 public:
+    friend class SiftExtractor;
     void  copyFeature(Feature& feature, Feature& newFeature);
 
     /**
@@ -68,6 +69,31 @@ public:
      * */
     double operator - (const Feature & b);
 
+    /**
+     *
+     * \brief Set container
+     *
+     * */
+    void setContrainer(void *container);
+    /**
+     *
+     * \brief Get container
+     *      Get container of this feature, typically to get the image 
+     * */
+    void *getContrainer();
+
+    /**
+     *
+     * \brief 
+     * */
+    void load(std::istream & IN);
+
+    /**
+     *
+     * \brief 
+     * */
+    void store(std::ostream & OUT);
+
     static int descriptor_length;
     /* Location in the image */
 
@@ -80,8 +106,9 @@ public:
     double descriptor[DEFAULT_DESCR_LEN];
 
     Meta * meta;
-};
 
+    void * container; ///< Use to get object/image containing this feature
+};
 }
 
 #endif

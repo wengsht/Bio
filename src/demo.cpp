@@ -60,56 +60,35 @@ int main(int argc, char **argv) {
 
     cout << "Final Proj" << endl;
 
+    SiftMatcher matcher;
     SiftExtractor extractor;
 
-    //Mat src = imread("./beaver.png", 0);
-//    Mat src = imread("./jobs.jpeg", 0);
-    Mat src = imread(imgFile, 0);
+    Mat input = imread(inputFile, 0);
+    vector<Feature> inputFeats;
+    extractor.sift(&input , inputFeats);
 
-//    src.convertTo(src, CV_64FC1, 1.0/255);
+    matcher.loadFile( imgFile );
+    matcher.setup();
 
-//    Mat dst = src.clone();
-
-//    imshow("demo", src);
-//    waitKey(1500);
-
-//    GaussianBlur( src, dst, Size(3, 3), 0, 0);
-
-//    imshow("blur", dst);
-//    waitKey(150000);
-
-    vector<Feature> null;
-   // TODO
-    extractor.sift(&src, null);
-
-    Mat src2 = imread(inputFile, 0);
-    vector<Feature> null2;
-    extractor.sift(&src2, null2);
-
-    SiftMatcher matcher;
-
-//    srand(-1);
-//    random(null);
-//    random(null2);
-
-    matcher.setup( null );
-
+    /*  
     ofstream dotOut("1.dot");
     matcher.dumpDot(dotOut);
     dotOut.close();
+    */
 
 
-    Feature & feature = matcher.match( null2[0] );
+    Feature & feature = *(matcher.match( inputFeats[0] ).first);
+
+    vector<Feature> &templateFeats = matcher.getFeatures();
 
     double testVal = 10000000000;
-    for(int i  =0;i < null.size() ;i++) {
-        null[i].dump(cout);
-        testVal = fmin(testVal, null2[0] - null[i]);
+    for(int i  =0;i < templateFeats.size() ;i++) {
+        testVal = fmin(testVal, inputFeats[0] - templateFeats[i]);
     }
 
     feature.dump(cout);
-    null2[0].dump(cout);
-    printf("kdTree: %lf\n", feature - null2[0]);
+    inputFeats[0].dump(cout);
+    printf("kdTree: %lf\n", feature - inputFeats[0]);
     printf("暴力: %lf\n", testVal);
 
     return 0;

@@ -433,7 +433,7 @@ Mat &SiftExtractor::siftFormatImg(Mat *img) {
     return *img;
 }
 
-void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
+void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *container) {
     outFeatures.clear();
 
     *img = siftFormatImg(img);
@@ -450,11 +450,19 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures) {
     calcDescriptor(outFeatures);
     
     sort(outFeatures.begin(),outFeatures.end(),comp);
+
+    assignContainer(outFeatures, container);
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
 //    show(img, outFeatures);
     // endding
     clearBuffers();
+}
+
+void SiftExtractor::assignContainer(std::vector< Feature > & feats, void *container) {
+    int idx;
+    for(idx = 0; idx < feats.size(); idx ++) 
+        feats[idx].container = container;
 }
 
 

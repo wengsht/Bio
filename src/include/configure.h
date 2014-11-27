@@ -1,4 +1,3 @@
-
 #define IMG_MARGIN 1
 /* Octaves  */
 #define DEFAULT_BASIC_SIGMA 1.6
@@ -51,3 +50,5 @@
 #define KD_MAX_BACKTRACK 250
 
 #define DEFAULT_MATCH_THRESHOLD 5
+
+#include "configureFrontEnd.h"
