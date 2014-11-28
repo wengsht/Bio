@@ -453,15 +453,20 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *containe
 
     // Building Pyramid
     vector< Octave > octaves;
-
+    
+    cout << "Generate Pyramid..."<< endl;
     generatePyramid( img, octaves );
 
+    cout << "Extrema Detection..." << endl;
     extremaDetect(octaves, outFeatures);
     
-    calcFeatureOri(outFeatures, octaves);
+    cout << "Calculate Feature Orientation..." << endl;
+    calcFeatureOri(outFeatures);
 
+    cout << "Calculate Descriptor..."<< endl;
     calcDescriptor(outFeatures);
     
+    cout << "Sort the Descriptor..."<< endl;
     sort(outFeatures.begin(),outFeatures.end(),comp);
 
     assignContainer(outFeatures, container, hashTag);
@@ -482,19 +487,32 @@ void SiftExtractor::assignContainer(std::vector< Feature > & feats, void *contai
 }
 
 
-void SiftExtractor::calcFeatureOri(vector< Feature >& features, vector< Octave >& octaves){
+void SiftExtractor::calcFeatureOri(vector< Feature >& features){
     vector< double > hist;
     int featPointSize = features.size();
+    
+   // cout << "Feature Point Size: "<<featPointSize<<endl;
 
     for( int feaIdx=0; feaIdx < featPointSize; feaIdx++){
+      // cout << "  CalcFeatureOri, iteration - " << feaIdx;
         //calculate the orientation histogram
         calcOriHist(features[feaIdx], hist);
-       
+        
+       // cout << ": Hist, ";
+       // for(int k=0; k<hist.size(); k++) cout << hist[k] << " ";
+       // cout << endl<<"Size: "<<hist.size();int temp; cin>>temp;
+        
         //smooth the orientation histogram
         for(int smoIdx=0; smoIdx < configures.smoothTimes; smoIdx++)
             smoothOriHist(hist);
         
+       // cout << "Smooth, ";
+        
+       // for(int k=0; k<hist.size(); k++) cout << hist[k] << " ";
+       // cout << endl<<"Size: "<<hist.size(); cin>>temp;
         addOriFeatures(features, features[feaIdx], hist);
+        
+       // cout << "Add Orientation Features" << endl;
    } 
 }
 
@@ -513,8 +531,13 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist) {
     int radius = cvRound(sigma * configures.oriWinRadius);
 
     //prepare for calculating the guassian weight,"gaussian denominator"
-//    printf("%lf\n", sigma);
     double gauss_denom = -1.0/(2.0*sigma*sigma);
+   
+    /*
+    cout << cvRound(3.1) << "  " << cvRound(3.6)<<endl;
+    cout << "Position:("<<p_x<<","<<p_y<<")."<<endl;
+    cout << "Ori sigma: "<<feature.meta->scale <<". New sigma: "<<sigma<< ". Radius: "<<radius<<endl<<endl;
+    int temp; cin>>temp;*/
 
     //size of histogram is according to the size of bins
     hist.resize(configures.histBins, 0);
@@ -523,31 +546,33 @@ void SiftExtractor::calcOriHist(Feature& feature, vector< double >& hist) {
     for(int i=-1*radius; i<=radius; i++){
         for(int j=-1*radius; j<=radius; j++){
             if(calcMagOri(img,p_x+i,p_y+j,mag,ori)){
-//                printf("%lf\n", ori);
                 //calculate the weight by gaussian distribution
                 weight = exp((i*i+j*j)*gauss_denom);
 
                 //check which bin the orientation related to
                 bin = cvRound(configures.histBins*(0.5-ori/(2.0*CV_PI)));
-                bin = bin < configures.histBins?bin:0;
+                if(bin>=configures.histBins)
+                    bin = 0;
                 
+                double bin2 = configures.histBins*(CV_PI-ori)/(2.0*CV_PI);
+                double bin1 = configures.histBins*(0.5-ori/(2.0*CV_PI));
                 //value is recalculated by multiplying weight
                 hist[bin] += mag * weight;
 
                 assert(bin < hist.size());
+                
+               // cout << "Mag: "<<mag<<". Ori: "<<ori<<". Weight: "<<weight<<". Bin: "<<bin1<<". Other Bin: "<<bin2 << endl; cin >> temp;
             }
         }
     }
 }
 
 
-//bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori) {
-//   if(x>0 && x<img->cols-1 && y>0 && y<img->rows-1){
 bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori){
    if(x>0 && (x < (img->cols)-1) && y>0 && (y < (img->rows)-1)){
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
-//        printf("%lf %lf\n", dx, dy);
+        
         mag = sqrt(dx*dx + dy*dy);
         ori = atan2(dy,dx);
         return true;
@@ -559,15 +584,18 @@ bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori)
 
 double SiftExtractor::getMatValue(Mat* img, int x, int y){
     return img->at<double>(y, x);
-//    return ((double*) img->data)[x*(img->cols)+y]; 
 }
 
+// Smooth strategy here do not consider the first and end position
 void SiftExtractor::smoothOriHist(vector< double >& hist) {
     double pre = hist[configures.histBins-1];
+    //double pre = hist[0];
+    double temp, post;
 
     for(int i=0; i<configures.histBins; i++){
-        double temp = hist[i];
-        double post = (i+1 == configures.histBins)?hist[0]:hist[i+1];
+        temp = hist[i];
+        post = (i+1 == configures.histBins)?hist[0]:hist[i+1];
+        //post = hist[i+1];
         hist[i] = 0.25*pre + 0.5*hist[i] + 0.25*post;
         pre = temp;
 
@@ -586,8 +614,7 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
     double maxOriDen = hist[0];
     for(int i=1; i < configures.histBins; i++){
         if(hist[i] > maxOriDen)
-            maxOriDen = hist[i];
-        
+            maxOriDen = hist[i]; 
     }
 
     oriDenThres = maxOriDen * configures.oriDenThresRatio;
@@ -601,7 +628,7 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
 
         post = (i+1)%configures.histBins;
 
-        if(hist[i] > oriDenThres && hist[i]>hist[pre] && hist[i]>hist[post]){
+        if(hist[i] >= oriDenThres && hist[i]>hist[pre] && hist[i]>hist[post]){
             count++;
 
             double binOffset = (0.5* (hist[pre]-hist[post])) / (hist[pre] - 2.0*hist[i] +hist[post]);
@@ -619,6 +646,9 @@ void SiftExtractor::addOriFeatures(vector<Feature>& features, Feature& feat, vec
 //                feat.copyFeature( feat, newFeature );
                 newFeature.orient =( (CV_PI * 2.0 * newBin)/configures.histBins ) - CV_PI;
                 features.push_back(newFeature);
+               // cout << "Original Feature: "<<feat.meta->scale << " "<<feat.orient<<endl;
+               // cout << "New Feature: "<<newFeature.meta->scale << " "<<newFeature.orient<<endl; int temp; cin>>temp;
+                
             }
             else{
                 //This feature is already in the vector Features,we do not need to push_back it
@@ -646,6 +676,7 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
    double sinOri = sin(orient);
    double curSigma = 0.5 * (configures.descWinWidth);
    double subWidth = feature.meta->scale * configures.descScaleAdjust; 
+   double constant = -1.0/(2*curSigma*curSigma);
 
    //The radius of required image field to calculate
    int radius = (subWidth*sqrt(2.0)*(configures.descWinWidth+1))/2.0 + 0.5;
@@ -681,10 +712,12 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
                       subOri += CV_PI2;
                   while(subOri >= CV_PI2)
                       subOri -= CV_PI2;
-                   
-                   double resultIdx = subOri * (configures.descHistBins/(2*CV_PI));
-                   double weight = exp((-1.0/(2*curSigma*curSigma))*(xRotate*xRotate + yRotate*yRotate));
-                   
+                  
+                  // get the coresponding bin of this orientation
+                   double resultIdx = (subOri/(2*CV_PI))*configures.descHistBins;
+                  // get weight by gaussian distance
+                   double weight = exp(constant*(xRotate*xRotate + yRotate*yRotate));
+                 // recalculate the magnitude by multiplying gaussian weight  
                   double weiMag = subMag*weight;
                   interpHistEntry(hist,xIdx,yIdx,resultIdx,weiMag);
                 }
@@ -696,28 +729,29 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
 
 //Interpolation Operation
 void SiftExtractor::interpHistEntry(vector< vector< vector<double> > >& hist, double xIdx, double yIdx, double resultIdx, double weiMag){
-    double d_r, d_c, d_o,value;
+    double d_r, d_c, d_o,val_r,val_c,val_o;
     int r0, c0, o0, rb, cb, ob;
 
-    r0 = cvFloor( xIdx );
-    c0 = cvFloor( yIdx );
+    r0 = cvFloor( yIdx );
+    c0 = cvFloor( xIdx );
     o0 = cvFloor( resultIdx );
-    d_r = xIdx - r0;
-    d_c = yIdx - c0;
+    d_r = yIdx - r0;
+    d_c = xIdx - c0;
     d_o = resultIdx - o0;
     
     for(int r=0; r<=1; r++){
         rb = r0+r;
         if(rb>=0 && rb<configures.descWinWidth){
+           val_r = weiMag * ((r==0)? (1.0-d_r):d_r);
            for(int c=0; c<=1; c++){
                cb = c0+c;
                if(cb>=0 && cb<configures.descWinWidth){
+                   val_c = val_r * ((c==0)? (1.0-d_c):d_c);
                    for(int o=0; o<=1; o++){
-                       value = weiMag * ((r==0)? (1.0-d_r):d_r);
-                       value = value * ((c==0)? (1.0-d_c):d_c);
-                       value = value * ((o==0)? (1.0-d_o):d_o);
-                       ob = (o0+0)%configures.descHistBins;
-                       hist[rb][cb][ob] = value;
+                       val_o = val_c * ((o==0)? (1.0-d_o):d_o);
+                       ob = (o0+o)%configures.descHistBins;
+                       hist[rb][cb][ob] += val_o;
+                       //cout << hist[rb][cb][ob] << endl;
                    }
                }
            } 

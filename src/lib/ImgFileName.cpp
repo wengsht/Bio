@@ -26,6 +26,8 @@
 #include <cstdlib>
 
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 #include "tool.h"
 

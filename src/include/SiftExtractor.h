@@ -199,7 +199,7 @@ class SiftExtractor {
     private:
         sift_configure configures;
 
-        void calcFeatureOri(vector< Feature >& features, vector< Octave > & octaves);
+        void calcFeatureOri(vector< Feature >& features);
         void calcOriHist(Feature& feature, vector< double >& hist);
         bool calcMagOri(Mat* img, int x, int y, double& mag, double& ori);
         double getMatValue(Mat* img, int x, int y);
