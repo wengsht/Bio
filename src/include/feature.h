@@ -91,6 +91,13 @@ public:
 
     /**
      *
+     * \brief Check if two feature come from the same object
+     *
+     * */
+    bool sameHashTag(Feature &b);
+
+    /**
+     *
      * \brief 
      * */
     void load(std::istream & IN);

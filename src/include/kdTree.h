@@ -163,7 +163,7 @@ class KDTree {
          * \param[in] val  if val less than best euDist, this node can be search 
          *
          * */
-        void addCandid(KDNode * node, double val);
+        void addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val);
 
         /**
          *
@@ -173,8 +173,28 @@ class KDTree {
          * return NULL if bestEuDist is smaller than any candid
          *
          * */
-        KDNode * getNextCandid(double bestEuDist);
+        KDNode * getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap, double bestEuDist);
+    private:
+        /**
+         *
+         * \brief Try to update best and second best val
+         *        best and second val should be from different objects!!
+         *
+         * */
+        inline void tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal, int &secBestIdx, double &secBestVal);
 
+        /**
+         *
+         * \brief Try to update best 
+         *
+         * */
+        inline void tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal);
+
+        bool sameObject(int idx1, int idx2) {
+            if(idx1 < 0 || idx2 < 0) return false;
+
+            return (*features)[idx1].sameHashTag((*features)[idx2]);
+        }
     private:
         std::vector<Feature> * features;
         KDNode * root;

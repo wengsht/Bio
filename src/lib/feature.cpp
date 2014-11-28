@@ -96,3 +96,6 @@ void Feature::store(std::ostream & OUT) {
 }
 
 
+bool Feature::sameHashTag(Feature &b) {
+    return hashTag == b.hashTag;
+}

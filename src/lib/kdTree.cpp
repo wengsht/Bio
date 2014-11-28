@@ -98,18 +98,84 @@ std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
     backTrackTimes = KD_MAX_BACKTRACK;
 
-    while(!backTrack_heap.empty())
-        backTrack_heap.pop();
+    std::priority_queue< KD_DfsNode > backTrack_heap;
 
-    std::pair<int, int> idxs = kd_dfs( root, input, INF, NIL_HEAD, INF, NIL_HEAD );
+    addCandid(backTrack_heap, root, 0);
 
-    return std::make_pair( &((*features)[idxs.first]),&((*features)[idxs.second]))  ;
+//    std::pair<int, int> idxs = kd_dfs( root, input, INF, NIL_HEAD, INF, NIL_HEAD );
+
+
+    int bestIdx = -1, secBestIdx = -1;
+    double bestVal = INF, secBestVal = INF;
+
+    while(backTrackTimes --) {
+        KDNode * node = getNextCandid( backTrack_heap, secBestVal );
+
+        if(! node) 
+            break;
+
+        while(!node->leaf()) {
+            const int &k = node->k;
+            const double &median = node->median;
+
+            double val = input[k];
+
+            KDNode * nextNode, *candidNode;
+
+            if(val <= median) {
+                /// left 
+                nextNode = node->left;
+                candidNode = node->right;
+            }
+            else {
+                /// right
+                nextNode = node->right;
+                candidNode = node->left;
+            }
+            addCandid( backTrack_heap, candidNode, fabs(val - median) );
+
+            node = nextNode;
+        }
+
+        assert(node->leaf());
+
+        int nodeIdx = node->head;
+
+        double tmpDist = ((*features)[nodeIdx] - input);
+
+        tryUpdate(nodeIdx, tmpDist, bestIdx, bestVal, secBestIdx, secBestVal );
+    }
+
+    Feature * bestFeat = NULL, *secBestFeat = NULL;
+    if(bestIdx != -1) bestFeat = &((*features)[bestIdx]);
+    if(secBestIdx != -1) secBestFeat = &((*features)[secBestIdx]);
+
+    return std::make_pair( bestFeat, secBestFeat )  ;
 }
 
-KDNode * KDTree::getNextCandid(double bestEuDist) {
-    if(backTrackTimes --  <= 0)
-        return NULL;
+inline 
+void KDTree::tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal) {
+    if(newVal < bestVal) {
+        bestVal = newVal;
+        bestIdx = newIdx;
+    }
+}
+inline
+void KDTree::tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal, int &secBestIdx, double &secBestVal) {
+    if(sameObject(newIdx, bestIdx)) {
+        tryUpdate(newIdx, newVal, bestIdx, bestVal);
+    }
+    else {
+        tryUpdate(newIdx, newVal, secBestIdx, secBestVal);
+    }
 
+    if(secBestVal < bestVal) {
+        std::swap(secBestIdx, bestIdx);
+        std::swap(secBestVal, bestVal);
+    }
+}
+
+KDNode * KDTree::getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap, double bestEuDist) {
     if(backTrack_heap.empty())
         return NULL;
 
@@ -124,6 +190,7 @@ KDNode * KDTree::getNextCandid(double bestEuDist) {
 }
 
 std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx) {
+    /*  
     if(!node) 
         return std::make_pair(bestIdx, secBestIdx);
 
@@ -134,8 +201,6 @@ std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEu
 
         double tmpDist = (features[nodeIdx] - input);
 
-        tryUpdate(nodeIdx, tmpDist, bestIdx, bestEuDist, secBestIdx, secBestEuDist);
-        /*  
         if(tmpDist < secBestEuDist) {
             secBestEuDist = tmpDist;
 
@@ -145,7 +210,6 @@ std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEu
             std::swap(secBestEuDist, bestEuDist);
             std::swap(bestIdx, secBestIdx);
         }
-        */
 
         KDNode * candid = getNextCandid(bestEuDist);
 
@@ -176,9 +240,10 @@ std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEu
     addCandid( candidNode, fabs(val - median) );
 
     return kd_dfs(nextNode, input, bestEuDist, bestIdx, secBestEuDist, secBestIdx);
+    */
 }
 
-void KDTree::addCandid(KDNode * node, double val) {
+void KDTree::addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val) {
     backTrack_heap.push(std::make_pair(val, node));
 }
 
