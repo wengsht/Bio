@@ -22,10 +22,11 @@
 #include <queue>
 #include <iostream>
 
+#include "tool.h"
+
 namespace bio {
 
 #define NIL_HEAD -1
-#define INF      1e20
 
 struct KDNode {
     int head;      ///< link list head, index link in KDTree
@@ -52,7 +53,6 @@ struct KDNode {
     void clear() {
         head = NIL_HEAD;
     }
-
 };
 
 typedef std::pair< double, KDNode *> KD_DfsNode;
@@ -147,25 +147,12 @@ class KDTree {
 
         /**
          *
-         * \brief find index of nearest point
-         * \param[in] node search kd-node
-         * \param[in] input input feature 
-         * \param[in] bestEuDist best Eu distance before search this node
-         * \param[in] bestIdx index of bestEuDist
-         * \return bestIdx+second BestIdx of bestEuDist after search this node
-         *         
-         *
-         * */
-        std::pair<int, int> kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx);
-
-        /**
-         *
          * \brief Add candid search node into priority queue, this node will be search if it is in the circle of best dist
          * \param[in] node search node
          * \param[in] val  if val less than best euDist, this node can be search 
          *
          * */
-        void addCandid(KDNode * node, double val);
+        void addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val);
 
         /**
          *
@@ -175,8 +162,28 @@ class KDTree {
          * return NULL if bestEuDist is smaller than any candid
          *
          * */
-        KDNode * getNextCandid(double bestEuDist);
+        KDNode * getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap, double bestEuDist);
+    private:
+        /**
+         *
+         * \brief Try to update best and second best val
+         *        best and second val should be from different objects!!
+         *
+         * */
+        inline void tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal, int &secBestIdx, double &secBestVal);
 
+        /**
+         *
+         * \brief Try to update best 
+         *
+         * */
+        inline void tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal);
+
+        bool sameObject(int idx1, int idx2) {
+            if(idx1 < 0 || idx2 < 0) return false;
+
+            return (*features)[idx1].sameHashTag((*features)[idx2]);
+        }
     private:
         std::vector<Feature> * features;
         KDNode * root;
@@ -192,10 +199,6 @@ class KDTree {
                       * node2->(head(2) -> 4 -> 0 -> -1
                       *
                       */
-
-        std::priority_queue< KD_DfsNode > backTrack_heap;
-
-        int backTrackTimes; ///< bbf search threshold 
 };
 }
 

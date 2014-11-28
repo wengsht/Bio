@@ -74,13 +74,27 @@ public:
      * \brief Set container
      *
      * */
-    void setContrainer(void *container);
+    void setContrainer(void *container, unsigned long hashTag = -1);
     /**
      *
      * \brief Get container
      *      Get container of this feature, typically to get the image 
      * */
-    void *getContrainer();
+    void *getContainer();
+
+    /**
+     *
+     * \brief Get hash tag
+     *      Get hash tag of this feature, same object should have the same tag
+     * */
+    unsigned long getHashTag();
+
+    /**
+     *
+     * \brief Check if two feature come from the same object
+     *
+     * */
+    bool sameHashTag(Feature &b);
 
     /**
      *
@@ -108,6 +122,7 @@ public:
     Meta * meta;
 
     void * container; ///< Use to get object/image containing this feature
+    unsigned long hashTag; ///< Image feature from the same object should have the same hashTag
 };
 }
 

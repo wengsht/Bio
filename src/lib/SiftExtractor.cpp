@@ -28,6 +28,15 @@
 using namespace bio;
 using namespace std;
 
+static void debugImg( Mat * mat) {
+    for(int i = 0;i < mat->rows; i++) {
+        for(int j = 0;j < mat->cols; j++) {
+            std::cout << mat->at<double>(i, j) << " " ;
+        }
+        std::cout << std::endl;
+    }
+}
+
 SiftExtractor::SiftExtractor() {
 #define SIFT_CONFIGURE(type, name, value) \
         configures.name = value;
@@ -74,7 +83,9 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
         baseSigma = sqrt(pow(sigmas[0], 2.0) - pow(configures.initSigma, 2.0));
     }
 
+
     GaussianBlur(baseImg, baseImg, Size(0, 0), baseSigma, baseSigma);
+
 
     octaves[0].addImg( baseImg );
     octaves[0].generateBlurLayers(S + 3, sigmas);
@@ -89,6 +100,7 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
 
         pyrDown( prevImg, octaves[i][0], Size((prevImg.cols+1)/2, (prevImg.rows+1)/2));
 
+
         octaves[i].generateBlurLayers(S + 3, sigmas);
 
         /** \brief  
@@ -98,6 +110,7 @@ void SiftExtractor::generatePyramid(Mat * img, vector< Octave > &octaves) {
     }
 
     generateDOGPyramid(octaves);
+//    debugImg(& octaves[1][1] );
 
 //    imshow("ww", *img);
 //    waitKey(150000);
@@ -433,7 +446,7 @@ Mat &SiftExtractor::siftFormatImg(Mat *img) {
     return *img;
 }
 
-void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *container) {
+void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *container, unsigned long hashTag) {
     outFeatures.clear();
 
     *img = siftFormatImg(img);
@@ -456,7 +469,8 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *containe
     cout << "Sort the Descriptor..."<< endl;
     sort(outFeatures.begin(),outFeatures.end(),comp);
 
-    assignContainer(outFeatures, container);
+    assignContainer(outFeatures, container, hashTag);
+
 //    printf("%d\n", outFeatures[0].meta->location.x);
 
 //    show(img, outFeatures);
@@ -464,10 +478,12 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *containe
     clearBuffers();
 }
 
-void SiftExtractor::assignContainer(std::vector< Feature > & feats, void *container) {
+void SiftExtractor::assignContainer(std::vector< Feature > & feats, void *container, unsigned long hashTag) {
     int idx;
-    for(idx = 0; idx < feats.size(); idx ++) 
+    for(idx = 0; idx < feats.size(); idx ++) {
         feats[idx].container = container;
+        feats[idx].hashTag   = hashTag;
+    }
 }
 
 

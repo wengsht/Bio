@@ -58,12 +58,17 @@ double Feature::operator - (const Feature & b)  {
     return sqrt(res);
 }
 
-void Feature::setContrainer(void *container) {
+void Feature::setContrainer(void *container, unsigned long hashTag) {
     this->container = container;
+    this->hashTag   = hashTag;
 }
 
-void * Feature::getContrainer() {
+void * Feature::getContainer() {
     return this->container;
+}
+
+unsigned long Feature::getHashTag() {
+    return this->hashTag;
 }
 
 void Feature::load(std::istream & IN) {
@@ -91,3 +96,6 @@ void Feature::store(std::ostream & OUT) {
 }
 
 
+bool Feature::sameHashTag(Feature &b) {
+    return hashTag == b.hashTag;
+}

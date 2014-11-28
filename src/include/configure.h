@@ -47,8 +47,12 @@
 // octIdx of octave with same size as original img
 #define DEFAULT_BASE_OCT_IDX 1
 
-#define KD_MAX_BACKTRACK 250
+///< bbf min backtrack, more than 250 nodes will be search 
+#define KD_MIN_BACKTRACK 250
+///< bbf ratio half of the kd-node will be searched
+#define KD_BACKTRACK_RATIO 2
 
-#define DEFAULT_MATCH_THRESHOLD 5
+#define DEFAULT_MATCH_THRESHOLD 100
+#define DEFAULT_MATCH_RATIO 0.8
 
 #include "configureFrontEnd.h"

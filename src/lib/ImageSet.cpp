@@ -52,11 +52,13 @@ void ImageSet::loadTemplate(const char *fileName) {
 
     char * siftFeatFileName = ImgFileName::generateSiftFileName(fileName);
 
+    unsigned long hashTag = ImgFileName::parseHashTag( fileName );
+
     if(true == tryLoadFromSiftFile(tmpFeats, siftFeatFileName)) {
-        SiftExtractor::assignContainer(tmpFeats, (void *)(const_cast<char *>(fileName)));
+        SiftExtractor::assignContainer(tmpFeats, (void *)(const_cast<char *>(fileName)), hashTag);
     }
     else {
-        extractor.sift(& img, tmpFeats, (void *) fileName );
+        extractor.sift(& img, tmpFeats, (void *) fileName, hashTag );
 
         storeSiftFile(tmpFeats, siftFeatFileName);
     }

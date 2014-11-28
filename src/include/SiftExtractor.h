@@ -118,13 +118,13 @@ class SiftExtractor {
             return configures;
         }
         // extract 
-        void sift(Mat* img, vector<Feature> & outFeatures, void *container = NULL);
+        void sift(Mat* img, vector<Feature> & outFeatures, void *container = NULL, unsigned long hashTag = -1);
 
         /**
          * \brief  assign a container for each feature, typically a filename or a image Mat
          *
          */
-        static void assignContainer(std::vector< Feature > & feats, void *container);
+        static void assignContainer(std::vector< Feature > & feats, void *container, unsigned long hashTag);
 
     private:
         // Generate pyramid, output into octaves
