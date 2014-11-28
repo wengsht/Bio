@@ -12,6 +12,8 @@ set(CAMERA camera)
 set(MATCH_DEMO match2img)
 set(DATABASE_DEMO match2db)
 
+set(ACCU accuracyTest)
+
 set(DETECT detect)
 
 set(IMG_DIR img)
@@ -23,6 +25,8 @@ add_executable(${MATCH_DEMO} ${MATCH_DEMO}.cpp)
 add_executable(${DATABASE_DEMO} ${DATABASE_DEMO}.cpp)
 
 add_executable(${DETECT} ${DETECT}.cpp)
+
+add_executable(${ACCU} ${ACCU}.cpp)
 
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
@@ -42,6 +46,9 @@ target_link_libraries(${DATABASE_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 target_link_libraries(${DETECT} ${SIFT})
 target_link_libraries(${DETECT} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
+
+target_link_libraries(${ACCU} ${SIFT})
+target_link_libraries(${ACCU} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 file(COPY ${PROJECT_SOURCE_DIR}/../${IMG_DIR}/ DESTINATION ${PROJECT_BINARY_DIR}/${IMG_DIR}/)
 file(COPY ${PROJECT_SOURCE_DIR}/../${HAAR_DIR}/ DESTINATION ${PROJECT_BINARY_DIR}/${HAAR_DIR}/)

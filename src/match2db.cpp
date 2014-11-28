@@ -70,7 +70,12 @@ int main(int argc, char **argv) {
 
     unsigned long matchTag =  matcher.match(inputFeats);
 
+
+    puts("a");
+    printf("%d\n", matchTag);
     std::cout << ImgFileName::descriptor(matchTag) << std::endl;
+    puts("b");
+    
     /*  
     int idx;
     map<string, int> cnt;

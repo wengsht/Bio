@@ -28,7 +28,7 @@
 
 #include "SiftMatcher.h"
 #include "ImageSet.h"
-#include "ImageFileName.h"
+#include "ImgFileName.h"
 #include <cstdlib>
 #include "configure.h"
 
@@ -66,60 +66,23 @@ int main(int argc, char **argv) {
     vector<Feature> testFeatures;
 
     vector<char* > testFileNames;
-    mgFileName::generateImgNames(testDir, testFileNames);
-
+    ImgFileName::generateImgNames(testDir, testFileNames);
+   
+    trainMatcher.setMatchRatio(0.8);
+    int correctCnt = 0;
     Feature * f1, * f2;
     double b1, b2;
     for(int fIdx=0; fIdx<testFileNames.size(); fIdx++){
         testFeatures.clear();
         testImageSet.loadTemplate(testFileNames[fIdx], testFeatures);
         
-        for(int idx=0; idx<testFeatures.size(); idx++){
-            pair<Feature*, Feature*> matches = trainMatcher.match(testFeatures[idx]);
-            f1 = matches.first;
-            f2 = matches.second;
-            
-            b1 = *f1 - testFeatures[idx];
-            b2 = *f2 - testFeatures[idx];
-            
-            if(b1/b2<0.6){
-                
-            }
-        }
+        unsigned long matchTag = trainMatcher.match(testFeatures);
+        if(testFeatures[0].getHashTag() == matchTag)
+            correctCnt++;
+    
+        std::cout<<"Test accuracy: "<< correctCnt << " : " << fIdx+1 << " : "<<testFileNames.size()<<endl;
     }
-
-
-
-    int idx;
-    map<string, int> cnt;
-    for(idx = 0; idx < inputFeats.size(); idx ++) {
-        pair<Feature *, Feature *> matchs = (matcher.match( inputFeats[idx] ));
-
-        Feature * f1 = matchs.first, * f2 = matchs.second;
-
-        double b1 = *f1 - inputFeats[idx];
-        double b2 = *f2 - inputFeats[idx];
-
-        printf("%lf %lf %lf\n", b1, b2, b1/b2);
-
-        if(b1 / b2 < 0.6) {
-            if(cnt.count( string((char *)(f1->getContainer()))) == false) 
-                cnt[string((char *)(f1->getContainer()))] =0;
-            cnt[string((char *)(f1->getContainer()))] ++;
-        }
-
-        if(f1) {
-            Log("best From [%lu][%s]", f1->getHashTag(), (char *)(f1->getContainer()));
-        }
-        if(f2) {
-            Log("second best From [%lu][%s]", f2->getHashTag(), (char *)(f2->getContainer()));
-        }
-        puts("++++++++++++");
-    }
-    map<string, int>::iterator Itr;
-    for(Itr = cnt.begin(); Itr != cnt.end(); Itr++) {
-        std::cout << Itr->first << " " << Itr->second << std::endl;
-    }
+    
     return 0;
 } 
 
@@ -136,10 +99,10 @@ bool dealOpts(int argc, char **argv) {
                 return false;
                 break;
         case 't':
-                strcpy(templateDir, optarg);
+                strcpy(trainDir, optarg);
                 break;
         case 'i':
-                strcpy(inputFile, optarg);
+                strcpy(testDir, optarg);
                 break;
         case 'b':
                 matchThres = atoi(optarg);
