@@ -62,7 +62,9 @@ bool SiftMatcher::isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &i
 }
 
 unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
-    int *matchCnt = new int[ImgFileName::getTagCnt()];
+    int tagCnt = ImgFileName::getTagCnt();
+    int *matchCnt = new int[tagCnt];
+    memset(matchCnt, 0, sizeof(int) * tagCnt);
 
     int featIdx, tagIdx;
     std::pair<Feature *, Feature *> matchPair;
@@ -72,7 +74,8 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
 
         if(isGoodMatch(matchPair, inputFeats[featIdx])) {
             int matchTag = (matchPair.first)->getHashTag();
-            if(matchTag >= 0 && matchTag < ImgFileName::getTagCnt())
+
+            if(matchTag >= 0 && matchTag < tagCnt)
                 matchCnt[matchTag] ++;
         }
     }
@@ -80,7 +83,7 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
     unsigned long resTag = -1;
     int maxCnt = 0;
 
-    for(tagIdx = 0; tagIdx < ImgFileName::getTagCnt(); tagIdx ++) {
+    for(tagIdx = 0; tagIdx < tagCnt; tagIdx ++) {
         if(maxCnt < matchCnt[tagIdx]) {
             maxCnt = matchCnt[tagIdx];
             resTag = tagIdx;
@@ -88,6 +91,7 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
     }
     delete matchCnt;
 
+    printf("%d\n", resTag);
     return resTag;
 }
 
@@ -101,4 +105,7 @@ void SiftMatcher::loadFeatures(std::vector<Feature> & inputFeat) {
 
 std::vector< Feature > & SiftMatcher::getFeatures() {
     return images.feat_database;
+}
+void SiftMatcher::setMatchRatio(double ratio) {
+    matchRatio = ratio;
 }
