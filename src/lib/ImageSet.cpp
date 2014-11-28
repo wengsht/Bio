@@ -66,6 +66,21 @@ void ImageSet::loadTemplate(const char *fileName) {
     feat_database.insert(feat_database.end(), tmpFeats.begin(), tmpFeats.end());
 }
 
+// save feature vectors into vectors outside the class
+void ImageSet::loadTemplate(const char *fileName, vector<Feature>& features){
+    Mat img = imread(fileName, 0);
+    char * siftFeatFileName = ImgFileName::generateSiftFileName(fileName);
+    unsigned long hashTag = ImgFileName::parseHashTag( fileName );
+    if(true == tryLoadFromSiftFile(features, siftFeatFileName)) {
+        SiftExtractor::assignContainer(features, (void *)(const_cast<char *>(fileName)), hashTag);
+    }
+    else {
+        extractor.sift(& img, features, (void *) fileName, hashTag );
+        storeSiftFile(features, siftFeatFileName);
+    }
+}
+
+
 void ImageSet::loadFeatures(std::vector<Feature> & inputFeat) {
     feat_database.insert(feat_database.end(), inputFeat.begin(), inputFeat.end());
 }

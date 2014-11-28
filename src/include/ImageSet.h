@@ -47,9 +47,11 @@ class ImageSet {
          *
          * */
         void loadTemplate(const char *fileName);
+        
+        void loadTemplate(const char *fileName, vector<Feature>& features);
 
         void loadFeatures(std::vector<Feature> & inputFeat);
-
+        
         void close();
     private:
         /**

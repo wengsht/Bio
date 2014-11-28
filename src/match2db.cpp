@@ -38,7 +38,7 @@ using namespace bio;
 
 using namespace cv;
 
-char templateDir[MAX_FILE_NAME_LEN] = "./img";
+char templateDir[MAX_FILE_NAME_LEN] = "./img/att";
 char inputFile[MAX_FILE_NAME_LEN] = "jobs.jpeg";
 
 double matchThres = DEFAULT_MATCH_THRESHOLD;
