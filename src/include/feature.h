@@ -80,7 +80,7 @@ public:
      * \brief Get container
      *      Get container of this feature, typically to get the image 
      * */
-    void *getContrainer();
+    void *getContainer();
 
     /**
      *

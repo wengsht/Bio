@@ -29,6 +29,8 @@
 #include "SiftMatcher.h"
 #include <cstdlib>
 
+#include "tool.h"
+
 using namespace std;
 
 using namespace bio;
@@ -77,7 +79,9 @@ int main(int argc, char **argv) {
     */
 
 
-    Feature & feature = *(matcher.match( inputFeats[0] ).first);
+    pair<Feature *, Feature *> res = (matcher.match( inputFeats[0] ));
+    Feature * feature = (res.first);
+    Feature * secFeature = (res.second);
 
     vector<Feature> &templateFeats = matcher.getFeatures();
 
@@ -86,9 +90,12 @@ int main(int argc, char **argv) {
         testVal = fmin(testVal, inputFeats[0] - templateFeats[i]);
     }
 
-    feature.dump(cout);
+    feature->dump(cout);
     inputFeats[0].dump(cout);
-    printf("kdTree: %lf\n", feature - inputFeats[0]);
+    printf(RED "best one kdTree: %lf from [%d][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
+
+    if(secFeature)
+        printf(RED "second best one kdTree: %lf from [%d][%s]\n", *secFeature - inputFeats[0], secFeature->getHashTag(), (char *)(secFeature->getContainer()));
     printf("暴力: %lf\n", testVal);
 
     return 0;

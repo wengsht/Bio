@@ -63,7 +63,7 @@ void Feature::setContrainer(void *container, unsigned long hashTag) {
     this->hashTag   = hashTag;
 }
 
-void * Feature::getContrainer() {
+void * Feature::getContainer() {
     return this->container;
 }
 

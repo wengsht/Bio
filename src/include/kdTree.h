@@ -146,18 +146,6 @@ class KDTree {
 
         /**
          *
-         * \brief find index of nearest point
-         * \param[in] node search kd-node
-         * \param[in] input input feature 
-         * \param[in] bestEuDist best Eu distance before search this node
-         * \param[in] bestIdx index of bestEuDist
-         * \return bestIdx+second BestIdx(from different objects) of bestEuDist after search this node
-         *
-         * */
-        std::pair<int, int> kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx);
-
-        /**
-         *
          * \brief Add candid search node into priority queue, this node will be search if it is in the circle of best dist
          * \param[in] node search node
          * \param[in] val  if val less than best euDist, this node can be search 
@@ -210,10 +198,6 @@ class KDTree {
                       * node2->(head(2) -> 4 -> 0 -> -1
                       *
                       */
-
-        std::priority_queue< KD_DfsNode > backTrack_heap;
-
-        int backTrackTimes; ///< bbf search threshold 
 };
 }
 

@@ -94,26 +94,24 @@ void KDTree::split( KDNode * parent ) {
 }
 
 std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
-
     //TODO set backTrackTimes to sizeof(features) / 10 ?
-    backTrackTimes = KD_MAX_BACKTRACK;
+    int backTrackTimes = KD_MAX_BACKTRACK;
 
     std::priority_queue< KD_DfsNode > backTrack_heap;
-
-    addCandid(backTrack_heap, root, 0);
-
-//    std::pair<int, int> idxs = kd_dfs( root, input, INF, NIL_HEAD, INF, NIL_HEAD );
 
 
     int bestIdx = -1, secBestIdx = -1;
     double bestVal = INF, secBestVal = INF;
 
+    addCandid(backTrack_heap, root, 0);
     while(backTrackTimes --) {
+        /// back track
         KDNode * node = getNextCandid( backTrack_heap, secBestVal );
 
         if(! node) 
             break;
 
+        /// trace to leaf
         while(!node->leaf()) {
             const int &k = node->k;
             const double &median = node->median;
@@ -187,60 +185,6 @@ KDNode * KDTree::getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap,
         return candid.second;
 
     return NULL;
-}
-
-std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx) {
-    /*  
-    if(!node) 
-        return std::make_pair(bestIdx, secBestIdx);
-
-    std::vector<Feature> & features = *(this->features);
-
-    if(node->leaf()) {
-        int nodeIdx = node->head;
-
-        double tmpDist = (features[nodeIdx] - input);
-
-        if(tmpDist < secBestEuDist) {
-            secBestEuDist = tmpDist;
-
-            secBestIdx = nodeIdx;
-        }
-        if(secBestEuDist < bestEuDist) {
-            std::swap(secBestEuDist, bestEuDist);
-            std::swap(bestIdx, secBestIdx);
-        }
-
-        KDNode * candid = getNextCandid(bestEuDist);
-
-        if(NULL == candid) 
-            return std::make_pair(bestIdx, secBestIdx);
-
-        return kd_dfs(candid, input, bestEuDist, bestIdx, secBestEuDist, secBestIdx);
-    }
-
-    const int &k = node->k;
-    const double &median = node->median;
-
-    double val = input[k];
-
-    KDNode * nextNode, *candidNode;
-
-    if(val <= median) {
-        /// left 
-        nextNode = node->left;
-        candidNode = node->right;
-    }
-    else {
-        /// right
-        nextNode = node->right;
-        candidNode = node->left;
-    }
-
-    addCandid( candidNode, fabs(val - median) );
-
-    return kd_dfs(nextNode, input, bestEuDist, bestIdx, secBestEuDist, secBestIdx);
-    */
 }
 
 void KDTree::addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val) {

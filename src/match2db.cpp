@@ -30,6 +30,8 @@
 #include <cstdlib>
 #include "configure.h"
 
+#include "tool.h"
+
 using namespace std;
 
 using namespace bio;
@@ -67,6 +69,13 @@ int main(int argc, char **argv) {
     int idx;
     for(idx = 0; idx < inputFeats.size(); idx ++) {
         pair<Feature *, Feature *> matchs = (matcher.match( inputFeats[idx] ));
+
+        Feature * f1 = matchs.first, * f2 = matchs.second;
+
+        if(f1) 
+            Log("best From [%lu][%s]", f1->getHashTag(), (char *)(f1->getContainer()));
+        if(f2) 
+            Log("second best From [%lu][%s]", f2->getHashTag(), (char *)(f2->getContainer()));
 
     }
     return 0;
