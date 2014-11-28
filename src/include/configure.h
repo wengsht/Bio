@@ -53,6 +53,7 @@
 #define KD_BACKTRACK_RATIO 2
 
 #define DEFAULT_MATCH_THRESHOLD 100
-#define DEFAULT_MATCH_RATIO 0.8
+
+#define DEFAULT_MATCH_RATIO 0.6
 
 #include "configureFrontEnd.h"

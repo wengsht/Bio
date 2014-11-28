@@ -16,10 +16,13 @@
 
 #include "SiftMatcher.h"
 #include <fstream>
+#include "ImgFileName.h"
 
 using namespace bio;
 
-SiftMatcher::SiftMatcher() {
+SiftMatcher::SiftMatcher() : \
+        matchRatio(DEFAULT_MATCH_RATIO)
+{
 
 }
 
@@ -43,6 +46,49 @@ void SiftMatcher::dumpDot(std::ostream &dotOut) {
 
 void SiftMatcher::loadDir(const char *dirName) {
     images.loadTemplates( dirName );
+}
+
+bool SiftMatcher::isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
+    if(matchs.second == NULL) 
+        return false;
+
+    Feature & best = *(matchs.first);
+    Feature & second = *(matchs.second);
+
+    double bestVal = best - inputFeat;
+    double secBestVal = second - inputFeat;
+
+    return (bestVal / secBestVal < matchRatio);
+}
+
+unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
+    int *matchCnt = new int[ImgFileName::getTagCnt()];
+
+    int featIdx, tagIdx;
+    std::pair<Feature *, Feature *> matchPair;
+
+    for(featIdx = 0; featIdx < inputFeats.size(); featIdx ++) {
+        matchPair = match( inputFeats[featIdx] );
+
+        if(isGoodMatch(matchPair, inputFeats[featIdx])) {
+            int matchTag = (matchPair.first)->getHashTag();
+            if(matchTag >= 0 && matchTag < ImgFileName::getTagCnt())
+                matchCnt[matchTag] ++;
+        }
+    }
+
+    unsigned long resTag = -1;
+    int maxCnt = 0;
+
+    for(tagIdx = 0; tagIdx < ImgFileName::getTagCnt(); tagIdx ++) {
+        if(maxCnt < matchCnt[tagIdx]) {
+            maxCnt = matchCnt[tagIdx];
+            resTag = tagIdx;
+        }
+    }
+    delete matchCnt;
+
+    return resTag;
 }
 
 void SiftMatcher::loadFile(const char *fileName) {

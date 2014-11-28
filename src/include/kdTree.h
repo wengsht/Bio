@@ -74,6 +74,7 @@ class KDTree {
         void buildTree(std::vector<Feature> & features);
 
         /**
+         *
          * \brief match a input point, return the nearest point in "database"
          * \param[in] features "datebase"
          * \return first: nearest point second: sec nearest point

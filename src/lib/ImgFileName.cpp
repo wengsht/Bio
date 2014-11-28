@@ -91,18 +91,21 @@ bool ImgFileName::isImgFile(const char * fileName) {
 }
 
 unsigned long ImgFileName::parseHashTag( const char * fileName ) {
-    static unsigned long count = 0;
     static char prefix[MAX_FILE_NAME_LEN];
 
     parseObjectPrefix(fileName, prefix);
 
-    if(! hashTable.count(std::string(prefix)) )
-        hashTable[std::string(prefix)] = count ++;
+    if(! hashTable.count(std::string(prefix)) ) {
+        descriptors.push_back(std::string(prefix));
+        hashTable[std::string(prefix)] = tagCnt ++;
+    }
 
     return hashTable[std::string(prefix)];
 }
 
 std::map< std::string, unsigned long > ImgFileName::hashTable;
+std::vector< std::string > ImgFileName::descriptors;
+unsigned long ImgFileName::tagCnt = 0;
 
 void ImgFileName::parseObjectPrefix(const char *fileName, char *prefix) {
     int idx = strlen(fileName) - 1;
@@ -121,4 +124,15 @@ void ImgFileName::parseObjectPrefix(const char *fileName, char *prefix) {
         separator[0] = '\0';
 
     Log("Filename:[%s], Object Prefix: [%s]", fileName, prefix);
+}
+
+std::string ImgFileName::descriptor(unsigned long hashTag) {
+    if(hashTag >= 0 && hashTag < descriptors.size())
+        return descriptors[hashTag];
+    else 
+        return "";
+}
+
+unsigned long ImgFileName::getTagCnt() {
+    return tagCnt;
 }
