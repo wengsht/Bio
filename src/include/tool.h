@@ -52,4 +52,11 @@ void WarnLog(const char *msg,...);
 
 #define NONE_BACK "\033[0m"
 
+#define INF 1e10
+#define eps 1e-10
+bool tooClose(double a, double b);
+
+
 #endif
+
+

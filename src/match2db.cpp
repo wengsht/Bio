@@ -67,16 +67,34 @@ int main(int argc, char **argv) {
     matcher.setup();
 
     int idx;
+    map<string, int> cnt;
     for(idx = 0; idx < inputFeats.size(); idx ++) {
         pair<Feature *, Feature *> matchs = (matcher.match( inputFeats[idx] ));
 
         Feature * f1 = matchs.first, * f2 = matchs.second;
 
-        if(f1) 
-            Log("best From [%lu][%s]", f1->getHashTag(), (char *)(f1->getContainer()));
-        if(f2) 
-            Log("second best From [%lu][%s]", f2->getHashTag(), (char *)(f2->getContainer()));
+        double b1 = *f1 - inputFeats[idx];
+        double b2 = *f2 - inputFeats[idx];
 
+        printf("%lf %lf %lf\n", b1, b2, b1/b2);
+
+        if(b1 / b2 < 0.6) {
+            if(cnt.count( string((char *)(f1->getContainer()))) == false) 
+                cnt[string((char *)(f1->getContainer()))] =0;
+            cnt[string((char *)(f1->getContainer()))] ++;
+        }
+
+        if(f1) {
+            Log("best From [%lu][%s]", f1->getHashTag(), (char *)(f1->getContainer()));
+        }
+        if(f2) {
+            Log("second best From [%lu][%s]", f2->getHashTag(), (char *)(f2->getContainer()));
+        }
+        puts("++++++++++++");
+    }
+    map<string, int>::iterator Itr;
+    for(Itr = cnt.begin(); Itr != cnt.end(); Itr++) {
+        std::cout << Itr->first << " " << Itr->second << std::endl;
     }
     return 0;
 } 

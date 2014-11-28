@@ -22,10 +22,11 @@
 #include <queue>
 #include <iostream>
 
+#include "tool.h"
+
 namespace bio {
 
 #define NIL_HEAD -1
-#define INF      1e20
 
 struct KDNode {
     int head;      ///< link list head, index link in KDTree

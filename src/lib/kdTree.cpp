@@ -20,6 +20,9 @@
 #include <algorithm>
 #include "configure.h"
 
+#include <cstdlib>
+#include <cstring>
+
 using namespace bio;
 
 KDTree::KDTree() : link(NULL), root(NULL) {
@@ -97,7 +100,7 @@ void KDTree::split( KDNode * parent ) {
 
 std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
-    int backTrackTimes = KD_MAX_BACKTRACK;
+    int backTrackTimes = std::max(KD_MIN_BACKTRACK, (int)((double)(features->size())) / KD_BACKTRACK_RATIO);
 
     if(!root) 
         return std::make_pair((Feature *)NULL, (Feature *)NULL);

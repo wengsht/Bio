@@ -94,11 +94,11 @@ int main(int argc, char **argv) {
     if(feature) {
         feature->dump(cout);
         inputFeats[0].dump(cout);
-        printf(RED "best one kdTree: %lf from [%d][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
+        printf(RED "best one kdTree: %lf from [%lu][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
     }
 
     if(secFeature)
-        printf(RED "second best one kdTree: %lf from [%d][%s]\n", *secFeature - inputFeats[0], secFeature->getHashTag(), (char *)(secFeature->getContainer()));
+        printf(RED "second best one kdTree: %lf from [%lu][%s]\n", *secFeature - inputFeats[0], secFeature->getHashTag(), (char *)(secFeature->getContainer()));
     printf("暴力: %lf\n", testVal);
 
     return 0;

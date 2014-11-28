@@ -771,8 +771,8 @@ void SiftExtractor::hist2Desc(vector< vector< vector<double> > >& hist, Feature&
         }
     }
     assert(feaIdx == DEFAULT_DESCR_LEN);
-    
-
+   
+   furtherProcess(feature); 
 }
 
 void SiftExtractor::furtherProcess(Feature& feature){
@@ -796,7 +796,12 @@ void SiftExtractor::normalize(Feature& feature){
        temp = feature.descriptor[i];
        sumSquare += temp*temp;
    }
-   sumInv = 1.0/sqrt(sumSquare);
+   
+   if(tooClose(sumSquare, 0.0))
+       sumInv = INF;
+   else
+       sumInv = 1.0/sqrt(sumSquare);
+
    for(int i=0; i<DEFAULT_DESCR_LEN; i++){
        feature.descriptor[i] *= sumInv;
    }
