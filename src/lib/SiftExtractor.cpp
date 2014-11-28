@@ -557,21 +557,6 @@ bool SiftExtractor::calcMagOri(Mat* img, int x, int y, double& mag, double& ori)
         double dx = getMatValue(img,x,y+1) - getMatValue(img, x, y-1);
         double dy = getMatValue(img,x-1,y) - getMatValue(img, x+1, y);
         
-        double *data = (double*)img->data;
-        int step = img->step/sizeof(*data);
-
-        double dx2 = *(data+step*y+(x+1))-(*(data+step*y+(x-1)));
-        double dy2 = *(data+step*(y+1)+x)-(*(data+step*(y-1)+x));
-
-      /*cout<<"My method: dx: "<<dx<<". dy: "<<dy<<endl;
-        cout<<"Other method: dx: "<<dx<<". dy: "<<dy<<endl;
-       for(int i=0;i<img->rows;i++){
-            for(int j=0; j<img->cols; j++){
-                cout<<" "<<getMatValue(img,i,j);
-            }
-            cout << endl;
-        }*/
-
         mag = sqrt(dx*dx + dy*dy);
         ori = atan2(dy,dx);
         return true;
@@ -711,10 +696,12 @@ void SiftExtractor::calcDescHist(Feature& feature, vector< vector< vector<double
                       subOri += CV_PI2;
                   while(subOri >= CV_PI2)
                       subOri -= CV_PI2;
-                   
-                   double resultIdx = subOri * (configures.descHistBins/(2*CV_PI));
+                  
+                  // get the coresponding bin of this orientation
+                   double resultIdx = (subOri/(2*CV_PI))*configures.descHistBins;
+                  // get weight by gaussian distance
                    double weight = exp(constant*(xRotate*xRotate + yRotate*yRotate));
-                   
+                 // recalculate the magnitude by multiplying gaussian weight  
                   double weiMag = subMag*weight;
                   interpHistEntry(hist,xIdx,yIdx,resultIdx,weiMag);
                 }
@@ -729,11 +716,11 @@ void SiftExtractor::interpHistEntry(vector< vector< vector<double> > >& hist, do
     double d_r, d_c, d_o,val_r,val_c,val_o;
     int r0, c0, o0, rb, cb, ob;
 
-    r0 = cvFloor( xIdx );
-    c0 = cvFloor( yIdx );
+    r0 = cvFloor( yIdx );
+    c0 = cvFloor( xIdx );
     o0 = cvFloor( resultIdx );
-    d_r = xIdx - r0;
-    d_c = yIdx - c0;
+    d_r = yIdx - r0;
+    d_c = xIdx - c0;
     d_o = resultIdx - o0;
     
     for(int r=0; r<=1; r++){
@@ -746,7 +733,7 @@ void SiftExtractor::interpHistEntry(vector< vector< vector<double> > >& hist, do
                    val_c = val_r * ((c==0)? (1.0-d_c):d_c);
                    for(int o=0; o<=1; o++){
                        val_o = val_c * ((o==0)? (1.0-d_o):d_o);
-                       ob = (o0+0)%configures.descHistBins;
+                       ob = (o0+o)%configures.descHistBins;
                        hist[rb][cb][ob] += val_o;
                        //cout << hist[rb][cb][ob] << endl;
                    }
