@@ -42,6 +42,8 @@ class SiftMatcher {
         void loadFile(const char *fileName);
         void loadFeatures(std::vector<Feature> & inputFeat);
 
+        unsigned long match(vector<Feature> &inputFeats);
+
         /**
          * \brief match a input point, return the nearest point in "database"
          * \param[in] features "datebase"
@@ -57,7 +59,10 @@ class SiftMatcher {
          * */
         std::vector< Feature > & getFeatures();
 
+        bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat);
+
     private:
+        double matchRatio;
         ImageSet images;
 
         KDTree kdTree;

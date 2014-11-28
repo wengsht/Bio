@@ -32,6 +32,8 @@
 
 #include "tool.h"
 
+
+#include "ImgFileName.h"
 using namespace std;
 
 using namespace bio;
@@ -66,6 +68,10 @@ int main(int argc, char **argv) {
     matcher.loadDir(templateDir);
     matcher.setup();
 
+    unsigned long matchTag =  matcher.match(inputFeats);
+
+    std::cout << ImgFileName::descriptor(matchTag) << std::endl;
+    /*  
     int idx;
     map<string, int> cnt;
     for(idx = 0; idx < inputFeats.size(); idx ++) {
@@ -96,6 +102,7 @@ int main(int argc, char **argv) {
     for(Itr = cnt.begin(); Itr != cnt.end(); Itr++) {
         std::cout << Itr->first << " " << Itr->second << std::endl;
     }
+    */
     return 0;
 } 
 

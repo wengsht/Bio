@@ -102,6 +102,7 @@ std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
     int backTrackTimes = std::max(KD_MIN_BACKTRACK, (int)((double)(features->size())) / KD_BACKTRACK_RATIO);
 
+//    backTrackTimes = 250;
     if(!root) 
         return std::make_pair((Feature *)NULL, (Feature *)NULL);
 

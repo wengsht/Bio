@@ -50,8 +50,14 @@ class ImgFileName {
          * */
         static unsigned long parseHashTag( const char * fileName );
 
+        static std::string descriptor(unsigned long hashTag) ;
+
+        static unsigned long getTagCnt();
+
     private:
+        static unsigned long tagCnt;
         static std::map< std::string, unsigned long > hashTable;
+        static std::vector< std::string > descriptors;
         static bool isImgFile(const char * fileName);
 };
 }
