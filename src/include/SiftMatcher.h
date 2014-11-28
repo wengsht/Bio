@@ -61,6 +61,8 @@ class SiftMatcher {
 
         bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat);
 
+        void setMatchRatio(double ratio);
+
     private:
         double matchRatio;
         ImageSet images;

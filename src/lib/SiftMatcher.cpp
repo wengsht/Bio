@@ -106,3 +106,6 @@ void SiftMatcher::loadFeatures(std::vector<Feature> & inputFeat) {
 std::vector< Feature > & SiftMatcher::getFeatures() {
     return images.feat_database;
 }
+void SiftMatcher::setMatchRatio(double ratio) {
+    matchRatio = ratio;
+}
