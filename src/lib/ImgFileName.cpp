@@ -23,6 +23,8 @@
 #include <dirent.h>
 
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 using namespace bio;
 
