@@ -61,9 +61,10 @@ char * ImgFileName::generateSiftFileName(const char * fileName) {
     static char siftFileName[MAX_FILE_NAME_LEN];
     strcpy(siftFileName, fileName);
 
-    char *suffix = getSuffix(siftFileName);
+//    char *suffix = getSuffix(siftFileName);
 
-    strcpy(suffix, SIFT_SUFFIX);
+    strcat(siftFileName, ".");
+    strcat(siftFileName, SIFT_SUFFIX);
 
     return siftFileName;
 }

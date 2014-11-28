@@ -39,6 +39,8 @@ void KDTree::buildTree(std::vector<Feature> & features) {
 
 //    (*(this->features))[0].dump(std::cout);
 
+    if(!pointSiz) return ;
+
     root = generateRoot(pointSiz);
 
     split( root );
@@ -96,6 +98,9 @@ void KDTree::split( KDNode * parent ) {
 std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
     int backTrackTimes = KD_MAX_BACKTRACK;
+
+    if(!root) 
+        return std::make_pair((Feature *)NULL, (Feature *)NULL);
 
     std::priority_queue< KD_DfsNode > backTrack_heap;
 

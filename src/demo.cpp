@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
 
 
     pair<Feature *, Feature *> res = (matcher.match( inputFeats[0] ));
+
     Feature * feature = (res.first);
     Feature * secFeature = (res.second);
 
@@ -90,9 +91,11 @@ int main(int argc, char **argv) {
         testVal = fmin(testVal, inputFeats[0] - templateFeats[i]);
     }
 
-    feature->dump(cout);
-    inputFeats[0].dump(cout);
-    printf(RED "best one kdTree: %lf from [%d][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
+    if(feature) {
+        feature->dump(cout);
+        inputFeats[0].dump(cout);
+        printf(RED "best one kdTree: %lf from [%d][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
+    }
 
     if(secFeature)
         printf(RED "second best one kdTree: %lf from [%d][%s]\n", *secFeature - inputFeats[0], secFeature->getHashTag(), (char *)(secFeature->getContainer()));
@@ -103,15 +106,19 @@ int main(int argc, char **argv) {
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "hi:")) != -1) {
+    while((c = getopt(argc, argv, "hi:t:")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
+                        -t template file name\n \
                         -i input file name\n");
 
                 return false;
                 break;
         case 'i':
+                strcpy(inputFile, optarg);
+                break;
+        case 't':
                 strcpy(imgFile, optarg);
                 break;
             default:
