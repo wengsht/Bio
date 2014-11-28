@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include "tool.h"
+#include <math.h>
 
 static int getch() {
     struct termios oldt,
@@ -93,5 +94,10 @@ void WarnLog(const char *msg,...){
     getch();
 }
 
+bool tooClose(double a, double b) {
+    if(fabs(a-b) <= eps)
+        return true;
+    return false;
+}
 
 
