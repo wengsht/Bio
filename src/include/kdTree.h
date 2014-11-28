@@ -52,7 +52,6 @@ struct KDNode {
     void clear() {
         head = NIL_HEAD;
     }
-
 };
 
 typedef std::pair< double, KDNode *> KD_DfsNode;
@@ -152,8 +151,7 @@ class KDTree {
          * \param[in] input input feature 
          * \param[in] bestEuDist best Eu distance before search this node
          * \param[in] bestIdx index of bestEuDist
-         * \return bestIdx+second BestIdx of bestEuDist after search this node
-         *         
+         * \return bestIdx+second BestIdx(from different objects) of bestEuDist after search this node
          *
          * */
         std::pair<int, int> kd_dfs(KDNode * node, Feature & input, double bestEuDist, int bestIdx, double secBestEuDist, int secBestIdx);

@@ -95,7 +95,9 @@ void KDTree::split( KDNode * parent ) {
 
 std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
 
+    //TODO set backTrackTimes to sizeof(features) / 10 ?
     backTrackTimes = KD_MAX_BACKTRACK;
+
     while(!backTrack_heap.empty())
         backTrack_heap.pop();
 
@@ -132,6 +134,8 @@ std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEu
 
         double tmpDist = (features[nodeIdx] - input);
 
+        tryUpdate(nodeIdx, tmpDist, bestIdx, bestEuDist, secBestIdx, secBestEuDist);
+        /*  
         if(tmpDist < secBestEuDist) {
             secBestEuDist = tmpDist;
 
@@ -141,6 +145,7 @@ std::pair<int, int> KDTree::kd_dfs(KDNode * node, Feature & input, double bestEu
             std::swap(secBestEuDist, bestEuDist);
             std::swap(bestIdx, secBestIdx);
         }
+        */
 
         KDNode * candid = getNextCandid(bestEuDist);
 

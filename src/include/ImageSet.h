@@ -17,7 +17,7 @@
 #define _AUTOGUARD_ImageSet_H_
 
 #include <vector>
-#include "Feature.h"
+#include "feature.h"
 #include "SiftExtractor.h"
 
 /**

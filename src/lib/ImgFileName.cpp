@@ -22,7 +22,12 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include <cstdio>
+#include <cstdlib>
+
 #include <cstring>
+
+#include "tool.h"
 
 using namespace bio;
 
@@ -42,7 +47,7 @@ void ImgFileName::generateImgNames(const char * dirName, std::vector<char *> & i
     while(NULL != (file = readdir(dirp))) {
         if(isImgFile(file->d_name)) {
             char *newFileName = new char[strlen(dirName) + strlen(file->d_name) + 2];
-            sprintf(newFileName, "%s/%s", dirName, file->d_name);
+            sprintf(newFileName, "%s%c%s", dirName, DIR_SEPARATOR, file->d_name);
 
             imgFileNames.push_back( newFileName );
         }
@@ -80,4 +85,37 @@ bool ImgFileName::isImgFile(const char * fileName) {
 #include "imgSuffix.def"
 
     return false;
+}
+
+unsigned long ImgFileName::parseHashTag( const char * fileName ) {
+    static unsigned long count = 0;
+    static char prefix[MAX_FILE_NAME_LEN];
+
+    parseObjectPrefix(fileName, prefix);
+
+    if(! hashTable.count(std::string(prefix)) )
+        hashTable[std::string(prefix)] = count ++;
+
+    return hashTable[std::string(prefix)];
+}
+
+std::map< std::string, unsigned long > ImgFileName::hashTable;
+
+void ImgFileName::parseObjectPrefix(const char *fileName, char *prefix) {
+    int idx = strlen(fileName) - 1;
+    while(idx >= 0 && fileName[idx] != DIR_SEPARATOR) 
+        idx --;
+
+    idx ++;
+    strcpy(prefix, fileName + idx);
+
+    char *separator = strstr(prefix, PREFFIX_SEPARATOR);
+
+    if(!separator)
+        separator = strstr(prefix, DOT_SEPARATOR);
+
+    if(separator)
+        separator[0] = '\0';
+
+    Log("Filename:[%s], Object Prefix: [%s]", fileName, prefix);
 }

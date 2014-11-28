@@ -17,6 +17,8 @@
 #define _AUTOGUARD_ImgFileName_H_
 
 #include <vector>
+#include <map>
+#include <string>
 /**
  * \brief this class process the file name of images
  *
@@ -33,7 +35,23 @@ class ImgFileName {
 
         static char * getSuffix(char * fileName);
 
+        /**
+         * \brief refine object prefix
+         * \param[in] fileName e.g.   xx/xx/xx/john_yy.suffix
+         * \param[out] prefix e.g. john
+         *
+         * */
+        static void parseObjectPrefix(const char *fileName, char *prefix);
+
+        /**
+         * \brief calculate hash value for file name, file from the same object should have the same hash value
+         *
+         *
+         * */
+        static unsigned long parseHashTag( const char * fileName );
+
     private:
+        static std::map< std::string, unsigned long > hashTable;
         static bool isImgFile(const char * fileName);
 };
 }
