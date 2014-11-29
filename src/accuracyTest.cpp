@@ -20,6 +20,7 @@
 #include <fstream>
 #include <cstdio>
 #include <unistd.h>
+#include <string>
 #include "feature.h"
 #include "SiftExtractor.h"
 
@@ -40,8 +41,10 @@ using namespace bio;
 
 using namespace cv;
 
-char trainDir[MAX_FILE_NAME_LEN] = "./img/att_train";
-char testDir[MAX_FILE_NAME_LEN] = "./img/att_test";
+string pathPrefix = "./img/";
+
+char trainDir[MAX_FILE_NAME_LEN] = "./img/att/att_train";
+char testDir[MAX_FILE_NAME_LEN] = "./img/att/att_test";
 
 double matchThres = DEFAULT_MATCH_THRESHOLD;
 
