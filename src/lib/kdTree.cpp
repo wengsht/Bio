@@ -102,11 +102,13 @@ std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
     int backTrackTimes = std::max(KD_MIN_BACKTRACK, (int)((double)(features->size())) / KD_BACKTRACK_RATIO);
 
+//    printf("%d\n", backTrackTimes);
+
 //    backTrackTimes = 250;
     if(!root) 
         return std::make_pair((Feature *)NULL, (Feature *)NULL);
 
-    std::priority_queue< KD_DfsNode > backTrack_heap;
+    KD_HEAP backTrack_heap;
 
 
     int bestIdx = -1, secBestIdx = -1;
@@ -182,7 +184,7 @@ void KDTree::tryUpdate(int newIdx, double newVal, int &bestIdx, double &bestVal,
     }
 }
 
-KDNode * KDTree::getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap, double bestEuDist) {
+KDNode * KDTree::getNextCandid(KD_HEAP & backTrack_heap, double bestEuDist) {
     if(backTrack_heap.empty())
         return NULL;
 
@@ -190,13 +192,22 @@ KDNode * KDTree::getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap,
 
     backTrack_heap.pop();
 
+    /*  
+    puts("a");
+    if(!backTrack_heap.empty()) {
+        KD_DfsNode candid2 = backTrack_heap.top();
+        printf("%lf %lf\n", candid.first,candid2.first);
+    }
+    */
+
     if(candid.first < bestEuDist) 
         return candid.second;
+
 
     return NULL;
 }
 
-void KDTree::addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val) {
+void KDTree::addCandid(KD_HEAP &backTrack_heap, KDNode * node, double val) {
     backTrack_heap.push(std::make_pair(val, node));
 }
 

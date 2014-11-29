@@ -44,7 +44,9 @@ void ImageSet::loadTemplates(const char *dirName) {
 }
 
 void ImageSet::loadTemplate(const char *fileName) {
-    static vector<Feature> tmpFeats;
+    vector<Feature> tmpFeats;
+
+    SiftExtractor extractor;
 
     tmpFeats.clear();
 
@@ -65,6 +67,7 @@ void ImageSet::loadTemplate(const char *fileName) {
 
     feat_database.insert(feat_database.end(), tmpFeats.begin(), tmpFeats.end());
 }
+
 
 void ImageSet::loadFeatures(std::vector<Feature> & inputFeat) {
     feat_database.insert(feat_database.end(), inputFeat.begin(), inputFeat.end());
@@ -112,4 +115,12 @@ void ImageSet::close() {
         delete [] (fileNames[idx]);
 
     fileNames.clear();
+}
+
+vector<Feature> & ImageSet::getFeatures() {
+    return feat_database;
+}
+
+Feature & ImageSet::operator [](int idx) {
+    return feat_database[idx];
 }

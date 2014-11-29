@@ -40,7 +40,7 @@ using namespace bio;
 
 using namespace cv;
 
-char templateDir[MAX_FILE_NAME_LEN] = "./img";
+char templateDir[MAX_FILE_NAME_LEN] = "./img/att";
 char inputFile[MAX_FILE_NAME_LEN] = "jobs.jpeg";
 
 double matchThres = DEFAULT_MATCH_THRESHOLD;
@@ -70,7 +70,12 @@ int main(int argc, char **argv) {
 
     unsigned long matchTag =  matcher.match(inputFeats);
 
+
+    puts("a");
+    printf("%d\n", matchTag);
     std::cout << ImgFileName::descriptor(matchTag) << std::endl;
+    puts("b");
+    
     /*  
     int idx;
     map<string, int> cnt;
