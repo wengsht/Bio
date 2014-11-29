@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     vector<char* > testFileNames;
     ImgFileName::generateImgNames(testDir, testFileNames);
    
-    trainMatcher.setMatchRatio(0.8);
+    trainMatcher.setMatchRatio(0.6);
     int correctCnt = 0;
     Feature * f1, * f2;
     double b1, b2;
@@ -80,7 +80,8 @@ int main(int argc, char **argv) {
         testImageSet.loadTemplate(testFileNames[fIdx]);
         
         unsigned long matchTag = trainMatcher.match(testImageSet.getFeatures());
-        if(testImageSet[fIdx].getHashTag() == matchTag)
+        
+        if(testImageSet[0].getHashTag() == matchTag)
             correctCnt++;
     
         std::cout<<"Test accuracy: "<< correctCnt << " : " << fIdx+1 << " : "<<testFileNames.size()<<endl;
