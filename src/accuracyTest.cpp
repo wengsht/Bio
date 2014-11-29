@@ -65,7 +65,6 @@ int main(int argc, char **argv) {
     trainMatcher.loadDir(trainDir);
     trainMatcher.setup();
    
-    ImageSet testImageSet;
     vector<Feature> testFeatures;
 
     vector<char* > testFileNames;
@@ -76,11 +75,12 @@ int main(int argc, char **argv) {
     Feature * f1, * f2;
     double b1, b2;
     for(int fIdx=0; fIdx<testFileNames.size(); fIdx++){
+        ImageSet testImageSet;
         testFeatures.clear();
-        testImageSet.loadTemplate(testFileNames[fIdx], testFeatures);
+        testImageSet.loadTemplate(testFileNames[fIdx]);
         
-        unsigned long matchTag = trainMatcher.match(testFeatures);
-        if(testFeatures[fIdx].getHashTag() == matchTag)
+        unsigned long matchTag = trainMatcher.match(testImageSet.getFeatures());
+        if(testImageSet[fIdx].getHashTag() == matchTag)
             correctCnt++;
     
         std::cout<<"Test accuracy: "<< correctCnt << " : " << fIdx+1 << " : "<<testFileNames.size()<<endl;

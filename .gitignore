@@ -8,4 +8,4 @@ latex/
 html/
 debug.txt
 doxy.sh 
-.sift
+*.sift
