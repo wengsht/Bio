@@ -36,10 +36,10 @@ using namespace bio;
 
 using namespace cv;
 
-char templateFile[125] = "5.pgm";
-char inputFile[125] = "jobs.jpeg";
+char templateFile[125] = "./img/demo/job_inbook_50.png";
+char inputFile[125] = "./img/demo/jobs.png";
 
-double matchThres = DEFAULT_MATCH_THRESHOLD;
+double matchThres = 130; //DEFAULT_MATCH_THRESHOLD;
 
 bool dealOpts(int argc, char **argv);
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     matcher.loadFeatures(templateFeats);
     matcher.setup();
 
-//    matcher.setMatchThres(250);
+    matcher.setMatchThres(matchThres);
 
     int dist = 50;
     Mat combineMat;
