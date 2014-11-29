@@ -40,16 +40,18 @@ using namespace bio;
 
 using namespace cv;
 
-char templateDir[MAX_FILE_NAME_LEN] = "./img/att";
-char inputFile[MAX_FILE_NAME_LEN] = "jobs.jpeg";
+char templateDir[MAX_FILE_NAME_LEN] = "./img/att/train/";
+char inputFile[MAX_FILE_NAME_LEN] = "./img/att/test/s9_8.pgm";
 
-double matchThres = DEFAULT_MATCH_THRESHOLD;
+double matchRatio = DEFAULT_MATCH_RATIO;
 
 bool dealOpts(int argc, char **argv);
 
 void combine(Mat &combineMat, Mat &inputImg, Mat &tempImg, int dist);
 void copy2Comb(Mat & combineMat, Mat & inputImg, int startRow, int startCol);
 void linkCombine(Mat & combineMat, int secStartRow, int secStartCol, Feature & input, Feature & temp);
+
+void drawName(Mat & showImg, std::string name);
 
 int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
@@ -59,6 +61,8 @@ int main(int argc, char **argv) {
 
     Mat inputImg = imread(inputFile, 0);
 
+    Mat showImg = inputImg;
+
     vector<Feature> inputFeats;
 
     extractor.sift(&inputImg, inputFeats);
@@ -67,49 +71,28 @@ int main(int argc, char **argv) {
 
     matcher.loadDir(templateDir);
     matcher.setup();
+    matcher.setMatchRatio(matchRatio);
 
     unsigned long matchTag =  matcher.match(inputFeats);
 
+    std::string resName = ImgFileName::descriptor(matchTag);
 
-    puts("a");
-    printf("%d\n", matchTag);
-    std::cout << ImgFileName::descriptor(matchTag) << std::endl;
-    puts("b");
+    std::cout << GREEN << "Input file name: " << inputFile << std::endl;
+
+    std::cout << RED << "Match Result: " << resName << NONE << std::endl;
+
+    drawName(showImg, resName);
+
+    imshow("Match Result", showImg);
+
+    waitKey(1000000);
     
-    /*  
-    int idx;
-    map<string, int> cnt;
-    for(idx = 0; idx < inputFeats.size(); idx ++) {
-        pair<Feature *, Feature *> matchs = (matcher.match( inputFeats[idx] ));
-
-        Feature * f1 = matchs.first, * f2 = matchs.second;
-
-        double b1 = *f1 - inputFeats[idx];
-        double b2 = *f2 - inputFeats[idx];
-
-        printf("%lf %lf %lf\n", b1, b2, b1/b2);
-
-        if(b1 / b2 < 0.6) {
-            if(cnt.count( string((char *)(f1->getContainer()))) == false) 
-                cnt[string((char *)(f1->getContainer()))] =0;
-            cnt[string((char *)(f1->getContainer()))] ++;
-        }
-
-        if(f1) {
-            Log("best From [%lu][%s]", f1->getHashTag(), (char *)(f1->getContainer()));
-        }
-        if(f2) {
-            Log("second best From [%lu][%s]", f2->getHashTag(), (char *)(f2->getContainer()));
-        }
-        puts("++++++++++++");
-    }
-    map<string, int>::iterator Itr;
-    for(Itr = cnt.begin(); Itr != cnt.end(); Itr++) {
-        std::cout << Itr->first << " " << Itr->second << std::endl;
-    }
-    */
     return 0;
 } 
+
+void drawName(Mat & showImg, std::string name) {
+    putText(showImg, name, Point(showImg.rows / 3, showImg.cols / 3), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255));
+}
 
 bool dealOpts(int argc, char **argv) {
     int c;
@@ -119,7 +102,7 @@ bool dealOpts(int argc, char **argv) {
                 printf("usage: \n \
                         -i input file name\n \
                         -t template template Dir \n \
-                        -b match threshold(KD TREE) \n");
+                        -b match ratio(0.8 is reasonable) \n");
 
                 return false;
                 break;
@@ -130,7 +113,7 @@ bool dealOpts(int argc, char **argv) {
                 strcpy(inputFile, optarg);
                 break;
         case 'b':
-                matchThres = atoi(optarg);
+                sscanf(optarg, "%lf", &matchRatio);
                 break;
             default:
                 break;

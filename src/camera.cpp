@@ -75,6 +75,10 @@ vector<string> names;
 
 pthread_mutex_t detect_lock = PTHREAD_MUTEX_INITIALIZER;
 
+Mat temp;
+
+double matchRatio = DEFAULT_MATCH_RATIO;
+
 int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
         return -1;
@@ -92,6 +96,7 @@ int main(int argc, char **argv) {
     matcher.setMatchRatio(0.8);
 
     matcher.setup();
+    matcher.setMatchRatio(matchRatio);
 
     while(true) {
         cap >> frame;
@@ -127,10 +132,11 @@ int main(int argc, char **argv) {
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "ht:")) != -1) {
+    while((c = getopt(argc, argv, "ht:b:")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
+                        -b Match ratio [0.8 is reasonable] \n\
                         -t template dir \n\
                         \n");
 
@@ -138,6 +144,9 @@ bool dealOpts(int argc, char **argv) {
                 break;
             case 't':
                 strcpy(templateDir, optarg);
+                break;
+            case 'b':
+                sscanf(optarg, "%lf", &matchRatio);
                 break;
             default:
                 break;

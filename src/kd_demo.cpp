@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         }
 
         if(feature) {
-            printf(RED "best one kdTree: %lf from [%lu][%s]\n", *feature - inputFeats[inputIdx], feature->getHashTag(), (char *)(feature->getContainer()));
+            printf(RED "kdTree bbf-search: %lf from [%lu][%s]\n", *feature - inputFeats[inputIdx], feature->getHashTag(), (char *)(feature->getContainer()));
             printf(BLUE "Naive n^2 search: %lf\n", testVal);
         }
         printf(NONE);

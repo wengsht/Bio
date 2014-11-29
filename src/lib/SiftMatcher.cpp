@@ -59,9 +59,11 @@ void SiftMatcher::loadDir(const char *dirName) {
 bool SiftMatcher::isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
     if(matchs.first == NULL) 
         return false;
+
     Feature & best = *(matchs.first);
 
     double bestVal = best - inputFeat;
+
 
     if(matchs.second == NULL) 
         return bestVal < matchThres;

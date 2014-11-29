@@ -54,6 +54,6 @@
 
 #define DEFAULT_MATCH_THRESHOLD (DEFAULT_DESCR_LEN*2)
 
-#define DEFAULT_MATCH_RATIO 0.6
+#define DEFAULT_MATCH_RATIO 0.8
 
 #include "configureFrontEnd.h"
