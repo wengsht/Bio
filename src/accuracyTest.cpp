@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         testImageSet.loadTemplate(testFileNames[fIdx], testFeatures);
         
         unsigned long matchTag = trainMatcher.match(testFeatures);
-        if(testFeatures[0].getHashTag() == matchTag)
+        if(testFeatures[fIdx].getHashTag() == matchTag)
             correctCnt++;
     
         std::cout<<"Test accuracy: "<< correctCnt << " : " << fIdx+1 << " : "<<testFileNames.size()<<endl;
