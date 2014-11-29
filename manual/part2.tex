@@ -1,0 +1,273 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{xcolor}
+
+
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\titleclass{\subsubsubsection}{straight}[\subsection]
+
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+
+\titleformat{\subsubsubsection}
+  {\normalfont\normalsize}{\thesubsubsubsection}{1em}{}
+\titlespacing*{\subsubsubsection}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{5}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}%
+  {-1em}%
+  {\normalfont\normalsize}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
+  {3.25ex \@plus1ex \@minus .2ex}%
+  {-1em}%
+  {\normalfont\normalsize}}
+\def\toclevel@subsubsubsection{4}
+\def\toclevel@paragraph{5}
+\def\toclevel@paragraph{6}
+\def\l@subsubsubsection{\@dottedtocline{4}{7em}{4em}}
+\def\l@paragraph{\@dottedtocline{5}{10em}{5em}}
+\def\l@subparagraph{\@dottedtocline{6}{14em}{6em}}
+\makeatother
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage{graphicx} 
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{ \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\sectionfont{\centering}
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+\normalfont \normalsize 
+\textsc{Sun Yat-sen University, SYSU-CMU Joint Institution of Engineering} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Final Project Code Manual\\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Shitao Weng(sweng@andrew.cmu.edu) \\ Shushan Chen(shushanc@andrew.cmu.edu)} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\usepackage{indentfirst}
+\setlength{\parindent}{2em} 
+\begin{document}
+
+\lstset{numbers=left,
+numberstyle=\small,
+keywordstyle=\color{blue!70}, commentstyle=\color{red!50!green!50!blue!50},
+frame=shadowbox,
+language={C++},
+showstringspaces=false
+%rulesepcolor=\color{red!20!green!20!blue!20}
+}
+
+\maketitle % Print the title
+
+\tableofcontents
+
+\section{Introduction}
+
+\section{SIFT}
+
+\section{SIFT MATCH \& KDTREE}
+
+\subsection{SIFT MATCH}
+
+\textsl{Relevant source files}: 
+
+\begin{enumerate}
+\item src/include/SiftMatcher.h
+\item src/lib/SiftMatcher.cpp
+\end{enumerate}
+
+
+\subsubsection{Load Training Datas}
+
+\begin{lstlisting}
+void loadDir(const char *dirName);
+void loadFile(const char *fileName);
+void loadFeatures(std::vector<Feature> & inputFeat);
+\end{lstlisting}
+
+\textbf{@ input}: [directory name] / [file name] / [a set of feature].
+
+\textbf{@ description}: These functions are called to add feature points into training database. It is easily to be understood that function \textbf{loadDir()} will call \textbf{loadFile()}. \\
+
+\subsubsection{Build KD-TREE}
+\begin{lstlisting}
+void setup();
+\end{lstlisting}
+
+\textbf{@ description}: This function should be called after you load all the training image into this class object.
+
+It will build a \textbf{KD-TREE} on existed template feature points.
+
+\subsubsection{Match}
+
+\begin{lstlisting}
+std::pair<Feature *, Feature *> match(Feature & input);
+unsigned long match(vector<Feature> &inputFeats);
+\end{lstlisting}
+
+\textbf{@ input}: [Feature] / [A set of Features]
+
+\textbf{@ description}: These function are called to match input feature points. It is easily understood that function \textbf{match(vector<> )} will call function \textbf{match(Feature \&)}.
+
+Function \textbf{match(vector<>)} will return a unique Tag, which can be used to find an object(Typically a name of an matched object in template database). 
+
+Function \textbf{match{Feature \&}} input a feature, and search the nearest and the second nearest feature point in the \textbf{KD-TREE}. 
+
+These two nearest feature points are from different objects(To be more clear, if using on face recognition, these two points should from two different \textbf{people}).
+
+These two nearest features will be tested using the following function:\\
+
+\begin{lstlisting}
+bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
+    ...
+    ...
+    return (bestVal / secBestVal < matchRatio);
+}
+\end{lstlisting}
+
+\textbf{@ input}: The nearest and second nearest matched features
+
+\textbf{@ output}: Good Match or Not.
+
+\textbf{@ description}: What it does is simply check if the ratio between the distances from the input feature is lower then a ceil value(By default, 0.8).
+
+\subsection{KD TREE}
+
+In this section, we give an function-level introduction of our implementation for \textbf{KD-TREE}. You don't need to read it if you only want to use the front-end functions. 
+
+\textsl{Relevant source files}: 
+
+\begin{enumerate}
+\item src/include/kdTree.h
+\item src/lib/kdTree.cpp
+\end{enumerate}
+
+\subsubsection{Build KD TREE}
+
+\begin{lstlisting}
+void buildTree(std::vector<Feature> & features);
+\end{lstlisting}
+
+\textbf{@ input}: A set of features
+
+\textbf{@ description}: Build a kd-tree on the input features.\\
+
+\begin{lstlisting}
+void split( KDNode * parent );
+\end{lstlisting}
+
+\textbf{@ description}: This function is called by function \textbf{buildTree()}, it will recursive split the nodes. At every split process, it will call: 
+
+\begin{lstlisting}
+int selectDimension( KDNode * node );
+\end{lstlisting}
+
+\textbf{@ input}: A node that is being splited.
+
+\textbf{@ output}: Dimension(among 128 dimensions) with the largest variance.
+
+\textbf{@ description}: It return the dimension with the largest variance. It is easily undetstood that spliting on this dimension will seperate the features into two sets with similar size. \\
+
+\begin{lstlisting}
+double findMedian( KDNode * node, int k );
+\end{lstlisting}
+
+\textbf{@ input}: A node that is being splited, selected dimension.
+
+\textbf{@ output}: Median in kth dimension.
+
+\textbf{@ description}: After selecting the best dimension, function \textbf{split} will split its feature points into two sets comparing with the median of them.  \\
+
+\subsubsection{BBF SEARCH}
+
+After generating a balanced kd-tree, the remaining of this class is searching process.\\
+
+\begin{lstlisting}
+std::pair<Feature *,Feature *> bbfNearest( Feature & input );
+\end{lstlisting}
+
+\textbf{@ input}: A feature.
+\textbf{@ output}: The nearest and the second nearest features on the kd-tree for the input feature.
+
+\textbf{@ description}: This is basically a \textbf{dfs} search process with support of prioriry quque, this search strategy is introduced by Dr. Lowe\cite{sift}. The basical idea is searching the closer branch firstly, and drop the very bad branches.
+
+\section{Other source codes}
+
+This section give a short description for other source codes, such as the demo codes.
+
+\subsection{DEMO}
+
+\subsection{ImageSet}
+
+\subsection{ImgFileName}
+
+\subsection{configures}
+
+\bibliographystyle{ieeetr}
+\bibliography{part2}
+
+\end{document}

@@ -41,18 +41,12 @@ using namespace bio;
 
 using namespace cv;
 
-string pathPrefix = "./img/";
+char trainDir[MAX_FILE_NAME_LEN] = "./img/att/train";
+char testDir[MAX_FILE_NAME_LEN] = "./img/att/test";
 
-char trainDir[MAX_FILE_NAME_LEN] = "./img/att/att_train";
-char testDir[MAX_FILE_NAME_LEN] = "./img/att/att_test";
-
-double matchThres = DEFAULT_MATCH_THRESHOLD;
+double matchRatio = DEFAULT_MATCH_RATIO;
 
 bool dealOpts(int argc, char **argv);
-
-void combine(Mat &combineMat, Mat &inputImg, Mat &tempImg, int dist);
-void copy2Comb(Mat & combineMat, Mat & inputImg, int startRow, int startCol);
-void linkCombine(Mat & combineMat, int secStartRow, int secStartCol, Feature & input, Feature & temp);
 
 int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
@@ -70,7 +64,7 @@ int main(int argc, char **argv) {
     vector<char* > testFileNames;
     ImgFileName::generateImgNames(testDir, testFileNames);
    
-    trainMatcher.setMatchRatio(0.8);
+    trainMatcher.setMatchRatio(matchRatio);
     int correctCnt = 0;
     Feature * f1, * f2;
     double b1, b2;
@@ -80,7 +74,8 @@ int main(int argc, char **argv) {
         testImageSet.loadTemplate(testFileNames[fIdx]);
         
         unsigned long matchTag = trainMatcher.match(testImageSet.getFeatures());
-        if(testImageSet[fIdx].getHashTag() == matchTag)
+        
+        if(testImageSet[0].getHashTag() == matchTag)
             correctCnt++;
     
         std::cout<<"Test accuracy: "<< correctCnt << " : " << fIdx+1 << " : "<<testFileNames.size()<<endl;
@@ -97,7 +92,7 @@ bool dealOpts(int argc, char **argv) {
                 printf("usage: \n \
                         -i input file name\n \
                         -t template template Dir \n \
-                        -b match threshold(KD TREE) \n");
+                        -b match ratio(0.8 is reasonable) \n");
 
                 return false;
                 break;
@@ -108,7 +103,7 @@ bool dealOpts(int argc, char **argv) {
                 strcpy(testDir, optarg);
                 break;
         case 'b':
-                matchThres = atoi(optarg);
+                sscanf(optarg, "%lf", & matchRatio);
                 break;
             default:
                 break;
@@ -117,27 +112,3 @@ bool dealOpts(int argc, char **argv) {
     return true;
 }
 
-void combine(Mat &combineMat, Mat &inputImg, Mat &tempImg, int dist) {
-    Mat tmp = Mat(max(inputImg.rows, tempImg.rows), inputImg.cols+tempImg.cols+dist, inputImg.type());
-
-    copy2Comb(tmp, inputImg, 0, 0);
-    copy2Comb(tmp, tempImg, 0, inputImg.cols + dist);
-
-    tmp.convertTo(combineMat, CV_8UC1, 255);
-    cvtColor(combineMat, combineMat, CV_GRAY2RGB);
-
-}
-void copy2Comb(Mat & combineMat, Mat & inputImg, int startRow, int startCol) {
-    for(int i = 0;i < inputImg.rows; i++) {
-        for(int j = 0;j < inputImg.cols;j++) {
-            combineMat.at<double>(i + startRow, j + startCol) = inputImg.at<double>(i, j);
-        }
-    }
-}
-
-void linkCombine(Mat & combineMat, int secStartRow, int secStartCol, Feature & input, Feature & temp) {
-    Point p1 = Point(input.originLoc.x, input.originLoc.y);
-    Point p2 = Point(secStartCol + temp.originLoc.x, secStartRow + temp.originLoc.y);
-
-    line(combineMat, p1, p2, Scalar(255,0,0), 1, 8);
-}

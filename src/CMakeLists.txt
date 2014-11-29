@@ -14,8 +14,6 @@ set(DATABASE_DEMO match2db)
 
 set(ACCU accuracyTest)
 
-set(DETECT detect)
-
 set(IMG_DIR img)
 set(HAAR_DIR haarcascades)
 
@@ -23,8 +21,6 @@ add_executable(${DEMO} ${DEMO}.cpp)
 add_executable(${CAMERA} ${CAMERA}.cpp)
 add_executable(${MATCH_DEMO} ${MATCH_DEMO}.cpp)
 add_executable(${DATABASE_DEMO} ${DATABASE_DEMO}.cpp)
-
-add_executable(${DETECT} ${DETECT}.cpp)
 
 add_executable(${ACCU} ${ACCU}.cpp)
 
@@ -44,9 +40,6 @@ target_link_libraries(${MATCH_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 target_link_libraries(${DATABASE_DEMO} ${SIFT})
 target_link_libraries(${DATABASE_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
-
-target_link_libraries(${DETECT} ${SIFT})
-target_link_libraries(${DETECT} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 target_link_libraries(${ACCU} ${SIFT})
 target_link_libraries(${ACCU} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})

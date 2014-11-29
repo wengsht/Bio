@@ -50,7 +50,7 @@
 ///< bbf min backtrack, more than 250 nodes will be search 
 #define KD_MIN_BACKTRACK 250
 ///< bbf ratio half of the kd-node will be searched
-#define KD_BACKTRACK_RATIO 5
+#define KD_BACKTRACK_RATIO 2
 
 #define DEFAULT_MATCH_THRESHOLD (DEFAULT_DESCR_LEN*2)
 

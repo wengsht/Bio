@@ -42,7 +42,6 @@ class SiftMatcher {
         void loadFile(const char *fileName);
         void loadFeatures(std::vector<Feature> & inputFeat);
 
-        unsigned long match(vector<Feature> &inputFeats);
 
         /**
          * \brief match a input point, return the nearest point in "database"
@@ -50,6 +49,7 @@ class SiftMatcher {
          *
          * */
         std::pair<Feature *, Feature *> match(Feature & input);
+        unsigned long match(vector<Feature> &inputFeats);
 
         void dumpDot(std::ostream &dotOut);
 
