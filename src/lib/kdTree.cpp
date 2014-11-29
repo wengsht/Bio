@@ -199,6 +199,7 @@ KDNode * KDTree::getNextCandid(KD_HEAP & backTrack_heap, double bestEuDist) {
         printf("%lf %lf\n", candid.first,candid2.first);
     }
     */
+//    printf("%lf\n", candid.first);
 
     if(candid.first < bestEuDist) 
         return candid.second;

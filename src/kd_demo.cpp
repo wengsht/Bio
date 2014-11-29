@@ -56,27 +56,31 @@ int main(int argc, char **argv) {
     extractor.sift(&input , inputFeats);
 
     matcher.loadFile( templateFile );
-    matcher.setMatchThres(matchThres);
     matcher.setup();
+    matcher.setMatchThres(matchThres);
 
-    pair<Feature *, Feature *> res = (matcher.match( inputFeats[0] ));
-
-    Feature * feature = (res.first);
-    Feature * secFeature = (res.second);
 
     vector<Feature> &templateFeats = matcher.getFeatures();
 
-    double testVal = INF;
+    for(int inputIdx = 0; inputIdx < inputFeats.size(); inputIdx++) {
+        pair<Feature *, Feature *> res = (matcher.match( inputFeats[inputIdx] ));
 
-    for(int i  =0;i < templateFeats.size() ;i++) {
-        testVal = fmin(testVal, inputFeats[0] - templateFeats[i]);
+        Feature * feature = (res.first);
+        Feature * secFeature = (res.second);
+
+        double testVal = INF;
+
+        for(int i  = 0;i < templateFeats.size() ;i++) {
+            testVal = fmin(testVal, inputFeats[inputIdx] - templateFeats[i]);
+        }
+
+        if(feature) {
+            printf(RED "best one kdTree: %lf from [%lu][%s]\n", *feature - inputFeats[inputIdx], feature->getHashTag(), (char *)(feature->getContainer()));
+            printf(BLUE "Naive n^2 search: %lf\n", testVal);
+        }
+        printf(NONE);
+
     }
-
-    if(feature) {
-        printf(RED "best one kdTree: %lf from [%lu][%s]\n", *feature - inputFeats[0], feature->getHashTag(), (char *)(feature->getContainer()));
-    }
-
-    printf("Naive n^2 search: %lf\n", testVal);
 
     return 0;
 } 
@@ -93,13 +97,13 @@ bool dealOpts(int argc, char **argv) {
 
                 return false;
                 break;
-        case 'i':
+            case 'i':
                 strcpy(inputFile, optarg);
                 break;
-        case 'b':
+            case 'b':
                 matchThres = atoi(optarg);
                 break;
-        case 't':
+            case 't':
                 strcpy(templateFile, optarg);
                 break;
             default:
