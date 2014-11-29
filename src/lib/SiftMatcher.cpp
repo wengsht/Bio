@@ -21,7 +21,8 @@
 using namespace bio;
 
 SiftMatcher::SiftMatcher() : \
-        matchRatio(DEFAULT_MATCH_RATIO)
+        matchRatio(DEFAULT_MATCH_RATIO), \
+        matchThres(DEFAULT_MATCH_THRESHOLD)
 {
 
 }
@@ -37,7 +38,14 @@ void SiftMatcher::setup() {
 
 
 std::pair<Feature *, Feature *> SiftMatcher::match(Feature & input) {
-    return kdTree.bbfNearest( input );
+    std::pair<Feature *, Feature *> matchPair = kdTree.bbfNearest(input);
+
+    if(isGoodMatch(matchPair, input)) {
+        return matchPair;
+    }
+    else 
+        return std::make_pair((Feature *)NULL, (Feature *) NULL);
+//    return kdTree.bbfNearest( input );
 }
 
 void SiftMatcher::dumpDot(std::ostream &dotOut) {
@@ -49,13 +57,17 @@ void SiftMatcher::loadDir(const char *dirName) {
 }
 
 bool SiftMatcher::isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
-    if(matchs.second == NULL) 
+    if(matchs.first == NULL) 
         return false;
-
     Feature & best = *(matchs.first);
-    Feature & second = *(matchs.second);
 
     double bestVal = best - inputFeat;
+
+    if(matchs.second == NULL) 
+        return bestVal < matchThres;
+
+    Feature & second = *(matchs.second);
+
     double secBestVal = second - inputFeat;
 
     return (bestVal / secBestVal < matchRatio);
@@ -72,12 +84,13 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
     for(featIdx = 0; featIdx < inputFeats.size(); featIdx ++) {
         matchPair = match( inputFeats[featIdx] );
 
-        if(isGoodMatch(matchPair, inputFeats[featIdx])) {
-            int matchTag = (matchPair.first)->getHashTag();
+        if(matchPair.first == NULL) continue;
+//        if(isGoodMatch(matchPair, inputFeats[featIdx])) {
+        int matchTag = (matchPair.first)->getHashTag();
 
-            if(matchTag >= 0 && matchTag < tagCnt)
-                matchCnt[matchTag] ++;
-        }
+        if(matchTag >= 0 && matchTag < tagCnt)
+            matchCnt[matchTag] ++;
+//        }
     }
 
     unsigned long resTag = -1;
@@ -91,7 +104,7 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
     }
     delete matchCnt;
 
-    printf("%d\n", resTag);
+    Log("%s %d\n", (ImgFileName::descriptor(resTag)).c_str(), maxCnt);
     return resTag;
 }
 
@@ -108,4 +121,8 @@ std::vector< Feature > & SiftMatcher::getFeatures() {
 }
 void SiftMatcher::setMatchRatio(double ratio) {
     matchRatio = ratio;
+}
+
+void SiftMatcher::setMatchThres(double thres) {
+    matchThres = thres;
 }

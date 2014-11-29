@@ -62,9 +62,11 @@ class SiftMatcher {
         bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat);
 
         void setMatchRatio(double ratio);
+        void setMatchThres(double thres);
 
     private:
         double matchRatio;
+        double matchThres;
         ImageSet images;
 
         KDTree kdTree;

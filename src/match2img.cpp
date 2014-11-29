@@ -67,22 +67,28 @@ int main(int argc, char **argv) {
     matcher.loadFeatures(templateFeats);
     matcher.setup();
 
+//    matcher.setMatchThres(250);
+
     int dist = 50;
     Mat combineMat;
     combine(combineMat, inputImg, tempImg, dist);
 
     int idx;
     for(idx = 0; idx < inputFeats.size(); idx ++) {
-        Feature & matchFeat = *((matcher.match( inputFeats[idx] )).first);
+        Feature * matchFeat = (matcher.match( inputFeats[idx] )).first;
 
-        if(matchFeat - inputFeats[idx] >= matchThres)
-            continue;
+//        if(matchFeat - inputFeats[idx] >= matchThres)
+//            continue;
 
-        linkCombine(combineMat, 0, inputImg.cols + dist, inputFeats[idx], matchFeat);
+        if(matchFeat != NULL)
+            linkCombine(combineMat, 0, inputImg.cols + dist, inputFeats[idx], *matchFeat);
     }
 
+    while(combineMat.cols * 2 <= SHOW_MIN_WIDTH && combineMat.rows * 2 <= SHOW_MIN_HEIGHT)
+        pyrUp( combineMat, combineMat, Size((combineMat.cols)*2, (combineMat.rows)*2));
+
     imshow("Sift Match Demo", combineMat);
-    waitKey(10000);
+    waitKey(1000000);
 
     return 0;
 } 
@@ -125,6 +131,7 @@ void combine(Mat &combineMat, Mat &inputImg, Mat &tempImg, int dist) {
     cvtColor(combineMat, combineMat, CV_GRAY2RGB);
 
 }
+
 void copy2Comb(Mat & combineMat, Mat & inputImg, int startRow, int startCol) {
     for(int i = 0;i < inputImg.rows; i++) {
         for(int j = 0;j < inputImg.cols;j++) {

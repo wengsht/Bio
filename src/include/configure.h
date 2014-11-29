@@ -52,7 +52,7 @@
 ///< bbf ratio half of the kd-node will be searched
 #define KD_BACKTRACK_RATIO 5
 
-#define DEFAULT_MATCH_THRESHOLD 100
+#define DEFAULT_MATCH_THRESHOLD (DEFAULT_DESCR_LEN*2)
 
 #define DEFAULT_MATCH_RATIO 0.6
 

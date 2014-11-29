@@ -37,6 +37,7 @@ target_link_libraries(${DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
 
 target_link_libraries(${CAMERA} ${SIFT})
 target_link_libraries(${CAMERA} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
+target_link_libraries(${CAMERA} pthread)
 
 target_link_libraries(${MATCH_DEMO} ${SIFT})
 target_link_libraries(${MATCH_DEMO} ${OPENCV_CPP_SAMPLES_REQUIRED_DEPS})
