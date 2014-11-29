@@ -104,7 +104,7 @@ unsigned long SiftMatcher::match(vector<Feature> &inputFeats) {
     }
     delete matchCnt;
 
-//    printf("%d\n", resTag);
+    Log("%s %d\n", (ImgFileName::descriptor(resTag)).c_str(), maxCnt);
     return resTag;
 }
 

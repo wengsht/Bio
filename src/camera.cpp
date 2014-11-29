@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     cap.set( CV_CAP_PROP_FRAME_HEIGHT,CAP_HEIGHT);
 
     matcher.loadDir( templateDir );
-    matcher.setMatchRatio(0.6);
+    matcher.setMatchRatio(0.8);
 
     matcher.setup();
 
