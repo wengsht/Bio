@@ -28,11 +28,14 @@
 #include <opencv2/objdetect/objdetect.hpp>
 
 #include "SiftMatcher.h"
+#include "ImgFileName.h"
 #include <cstdlib>
 
 #include "configure.h"
 
 #include "tool.h"
+
+#include <pthread.h>
 
 using namespace std;
 
@@ -42,15 +45,35 @@ using namespace cv;
 
 char templateDir[MAX_FILE_NAME_LEN] = "./img/camera_data";
 
-char *face_cascade_name = "./haarcascades/haarcascade_frontalface_default.xml";
+char face_cascade_name[MAX_FILE_NAME_LEN] = "./haarcascades/haarcascade_frontalface_alt.xml";
 
 CascadeClassifier face_cascade;
 
 bool dealOpts(int argc, char **argv);
 void drawFeatures(Mat &frame, vector<Feature> &feats);
-void drawRects(Mat &frame, vector<Rect> &rects);
+void drawRects(Mat &frame, vector<Rect> &rects, vector<string> names);
 
-void detectFace(Mat &frame, vector<Rect> &faces);
+void *detectFaceThread(void *);
+void detectFace(Mat frame, vector<Rect> &faces);
+void reconition(Mat frame, vector<Rect> &faces, vector<string > &results);
+
+
+VideoCapture cap(0);
+
+SiftExtractor extractor;
+SiftMatcher matcher;
+
+vector<Feature> feats;
+vector<Feature> face;
+
+int cnt = FRAME_INTERVAL;
+
+Mat frame;
+
+vector<Rect> faces;
+vector<string> names;
+
+pthread_mutex_t detect_lock = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
@@ -62,26 +85,13 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    VideoCapture cap(0);
     cap.set( CV_CAP_PROP_FRAME_WIDTH,CAP_WIDTH);
     cap.set( CV_CAP_PROP_FRAME_HEIGHT,CAP_HEIGHT);
 
-    SiftExtractor extractor;
-    SiftMatcher matcher;
-
     matcher.loadDir( templateDir );
+    matcher.setMatchRatio(0.6);
 
     matcher.setup();
-
-    vector<Feature> feats;
-    vector<Feature> face;
-
-    int cnt = FRAME_INTERVAL;
-
-    Mat frame;
-
-    vector<Rect> faces;
-    vector<string> results;
 
     while(true) {
         cap >> frame;
@@ -90,37 +100,19 @@ int main(int argc, char **argv) {
         if(cnt --) {
         }
         else {
-            detectFace(frame, faces);
+            pthread_t thread;
+            pthread_create(&thread, NULL, detectFaceThread, NULL);
 
-            for(int idx = 0;idx < faces.size(); idx ++) {
-                Log("%d %d %d %d\n", faces[idx].x, faces[idx].y, faces[idx].width, faces[idx].height);
-            }
-            /*  
-        face.clear();
-            extractor.sift(& frame, feats);
-
-            for(int idx = 0;idx < feats.size(); idx ++) {
-                pair<Feature *, Feature *> newMatch = matcher.match(feats[idx]);
-
-                Feature *bestFeat = newMatch.first;
-                Feature *secFeat  = newMatch.second;
-
-                double bestDist = * bestFeat - feats[idx];
-                double secBestDist = *secFeat - feats[idx];
-
-                if(bestDist / secBestDist < DEFAULT_MATCH_RATIO) {
-                    printf("%s\n", (char *) (bestFeat->getContainer()));
-                    face.push_back(feats[idx]);
-                }
-            }
-
-            */
             cnt = FRAME_INTERVAL;
         }
 
-        drawFeatures(showFrame, face);
-        drawRects(showFrame, faces);
 
+        pthread_mutex_lock(&detect_lock);
+
+        drawFeatures(showFrame, face);
+        drawRects(showFrame, faces, names);
+
+        pthread_mutex_unlock(&detect_lock);
 
         for(int idx = 0; idx < SHOW_PYR_TIMES; idx++) {
             pyrUp( showFrame, showFrame, Size((showFrame.cols)*2, (showFrame.rows)*2));
@@ -164,7 +156,7 @@ void drawFeatures(Mat &frame, vector<Feature> &feats) {
     }
 }
 
-void detectFace(Mat &frame, vector<Rect> &faces) {
+void detectFace(Mat frame, vector<Rect> &faces) {
     Mat frame_gray;
     cvtColor(frame, frame_gray, CV_BGR2GRAY);
     equalizeHist(frame_gray, frame_gray);
@@ -172,9 +164,44 @@ void detectFace(Mat &frame, vector<Rect> &faces) {
     face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 }
 
-void drawRects(Mat &frame, vector<Rect> &rects) {
+void drawRects(Mat &frame, vector<Rect> &rects, vector<string> names) {
     int idx;
     for(idx = 0; idx < rects.size(); idx ++) {
         rectangle(frame, rects[idx], Scalar(0,0,255));
+        putText(frame, names[idx], Point(rects[idx].x, rects[idx].y), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255));
     }
+}
+
+void reconition(Mat frame, vector<Rect> &faces, vector<string > &results) {
+    int faceIdx;
+    vector<Feature> feats;
+    results.clear();
+
+    SiftExtractor extractor;
+
+    for(faceIdx = 0; faceIdx < faces.size(); faceIdx ++) {
+        Mat face(frame, faces[faceIdx]);
+
+        feats.clear();
+
+        extractor.sift(&face, feats);
+
+        unsigned long matchTag = matcher.match(feats);
+
+        results.push_back(ImgFileName::descriptor(matchTag));
+    }
+}
+
+void *detectFaceThread(void *data) {
+    vector<Rect> newFaces;
+    vector<string> newNames;
+
+    detectFace(frame, newFaces);
+    reconition(frame, newFaces, newNames);
+
+    pthread_mutex_lock(&detect_lock);
+    faces = newFaces;
+    names = newNames;
+    pthread_mutex_unlock(&detect_lock);
+    pthread_exit(NULL);
 }

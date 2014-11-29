@@ -447,6 +447,7 @@ Mat &SiftExtractor::siftFormatImg(Mat *img) {
 }
 
 void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *container, unsigned long hashTag) {
+
     outFeatures.clear();
 
     *img = siftFormatImg(img);
@@ -454,19 +455,19 @@ void SiftExtractor::sift(Mat *img, vector<Feature> & outFeatures, void *containe
     // Building Pyramid
     vector< Octave > octaves;
     
-    cout << "Generate Pyramid..."<< endl;
+    Log("Generate Pyramid...");
     generatePyramid( img, octaves );
 
-    cout << "Extrema Detection..." << endl;
+    Log("Extrema Detection...");
     extremaDetect(octaves, outFeatures);
     
-    cout << "Calculate Feature Orientation..." << endl;
+    Log("Calculate Feature Orientation...");
     calcFeatureOri(outFeatures);
 
-    cout << "Calculate Descriptor..."<< endl;
+    Log("Calculate Descriptor...");
     calcDescriptor(outFeatures);
     
-    cout << "Sort the Descriptor..."<< endl;
+    Log("Sort the Descriptor...");
     sort(outFeatures.begin(),outFeatures.end(),comp);
 
     assignContainer(outFeatures, container, hashTag);
