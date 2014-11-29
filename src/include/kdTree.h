@@ -63,6 +63,7 @@ typedef std::pair< double, KDNode *> KD_DfsNode;
  *  */
 class KDTree {
     public:
+        typedef std::priority_queue< KD_DfsNode, std::vector<KD_DfsNode>, std::greater<KD_DfsNode> > KD_HEAP;
         KDTree();
         ~KDTree();
 
@@ -153,7 +154,7 @@ class KDTree {
          * \param[in] val  if val less than best euDist, this node can be search 
          *
          * */
-        void addCandid(std::priority_queue<KD_DfsNode> &backTrack_heap, KDNode * node, double val);
+        void addCandid(KD_HEAP &backTrack_heap, KDNode * node, double val);
 
         /**
          *
@@ -163,7 +164,7 @@ class KDTree {
          * return NULL if bestEuDist is smaller than any candid
          *
          * */
-        KDNode * getNextCandid(std::priority_queue<KD_DfsNode> & backTrack_heap, double bestEuDist);
+        KDNode * getNextCandid(KD_HEAP & backTrack_heap, double bestEuDist);
     private:
         /**
          *

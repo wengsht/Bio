@@ -44,7 +44,9 @@ void ImageSet::loadTemplates(const char *dirName) {
 }
 
 void ImageSet::loadTemplate(const char *fileName) {
-    static vector<Feature> tmpFeats;
+    vector<Feature> tmpFeats;
+
+    SiftExtractor extractor;
 
     tmpFeats.clear();
 

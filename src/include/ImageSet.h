@@ -69,7 +69,6 @@ class ImageSet {
          * */
         void storeSiftFile(std::vector<Feature> & feats, const char * siftFileName);
 
-        SiftExtractor extractor;
 
         std::vector<Feature> feat_database;
 

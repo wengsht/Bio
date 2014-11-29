@@ -6,7 +6,7 @@ SET(OPENCV_CPP_SAMPLES_REQUIRED_DEPS opencv_core opencv_imgproc opencv_flann
     opencv_objdetect opencv_photo opencv_features2d opencv_calib3d
     opencv_stitching opencv_videostab )
 
-set(DEMO demo)
+set(DEMO kd_demo)
 set(SIFT sift)
 set(CAMERA camera)
 set(MATCH_DEMO match2img)
