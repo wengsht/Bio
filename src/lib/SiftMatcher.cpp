@@ -128,3 +128,7 @@ void SiftMatcher::setMatchRatio(double ratio) {
 void SiftMatcher::setMatchThres(double thres) {
     matchThres = thres;
 }
+
+void SiftMatcher::setKdBackTrackRatio(int ratio) {
+    kdTree.setBackTrackRatio(ratio);
+}

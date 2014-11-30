@@ -114,6 +114,15 @@
 \setlength{\parindent}{2em} 
 \begin{document}
 
+\lstset{numbers=left,
+numberstyle=\small,
+keywordstyle=\color{blue!70}, commentstyle=\color{red!50!green!50!blue!50},
+frame=shadowbox,
+language={C++},
+showstringspaces=false
+%rulesepcolor=\color{red!20!green!20!blue!20}
+}
+
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{dred}{rgb}{0.545,0,0}
 \definecolor{dblue}{rgb}{0,0,0.545}
@@ -122,8 +131,9 @@
 \definecolor{darkblue}{rgb}{0.0,0.0,0.6}
 \lstset{ 
     basicstyle=\footnotesize \ttfamily \color{black} \bfseries,   
-    breakatwhitespace=false,
-    breaklines=true,
+    breakatwhitespace=false,       
+    breaklines=true,               
+    captionpos=b,                   
     commentstyle=\color{dkgreen},   
     deletekeywords={...},          
     escapeinside={\%*}{*)},                  
@@ -141,53 +151,20 @@
     showstringspaces=false,        
     showtabs=false,                
     stepnumber=1,                   
-    tabsize=4,                     
+    tabsize=5,                     
     title=\lstname,                 
 }
 \maketitle % Print the title
 
-\tableofcontents 
-
-\clearpage
+\tableofcontents
 
 \section{Introduction}
 
 This document is a code manual for our final project. Our project is basically a ground-up implementation of Scale Invariant Feature Matching with application to image classification.
 
-In order to test the accuray of SIFT feature, two public face recognition database are used here. One is \textbf{AT\&T} face database \cite{att}, which containing 400 images for 40 person. Another one is \textbf{Yale} face dataset \cite{yale}, which contains 165 images for 15 subjects. In these two databases, our SIFT feature matching gains more than 95\% accuracy. Several other demo programs, such as real time recognizing person in camera video, are also written to show how our codes work. For detailed information about demo, please refer to "Installation-Usage.pdf". For an overview of this document, please refer to table \ref{file-table}, which shows the document structure.
+In order to test the accuray of SIFT feature, two public face recognition database are used here. One is \textbf{AT\&T} face database \cite{att}, which containing 400 images for 40 person. Another one is \textbf{Yale} face dataset \cite{yale}, which contains 165 images for 15 subjects. In these two databases, our SIFT feature matching gains more than 95\% accuracy. Several other demo programs, such as real time recognizing person in camera video, are also written to show how our codes work. For detailed information about demo, please refer to "Installation-Usage.pdf".
 
-\begin{table}[h]
-    \centering
-    \begin{tabular}{|c|c|c|}
-        \hline
-        \textbf{Section} & \textbf{Content} & \textbf{Related Source Files}  \\\hline
-              Section \ref{sec-sift} & SIFT & src/include/SiftExtractor.h \\
-              & & src/lib/SiftExtractor.cpp \\\hline
-              Section \ref{sec-sift-match} & SIFT Match & src/include/SiftMatcher.h \\
-              & & src/lib/SiftMatcher.cpp \\\hline
-              Section \ref{sec-kd-tree} & KD TREE& src/include/kdTree.h \\
-              & & src/lib/kdTree.cpp \\\hline
-              Section \ref{sec-demo} & Demo & src/kd\_demo.cpp \\
-              & & src/match2img.cpp \\
-              & & src/match2db.cpp \\
-              & & src/accuracyTest.cpp \\
-              & & src/camera.cpp \\\hline
-              Section \ref{sec-feature} \& \ref{sec-file} \& \ref{sec-configure} & Other Source codes & src/include/feature.h\\
-              & & src/lib/feature.cpp \\
-              & & src/include/ImageSet.h\\
-              & & src/lib/ImageSet.cpp\\
-              & & src/include/imgSuffix.def\\
-              & & src/include/ImageFileName.h\\
-              & & src/lib/ImageFileName.cpp\\
-              & & src/include/configure.h\\
-              & & src/include/configureFrontEnd.h\\
-              & & src/include/siftConfigure.def\\\hline
-    \end{tabular}
-    \caption{Document structure}\label{file-table}
-\end{table}
-
-\clearpage
-\section{SIFT} \label{sec-sift}
+\section{SIFT}
 
 \subsection{Introduction}
 
@@ -196,7 +173,7 @@ SIFT (Scale Invariant Feature Transform) is developed by Lowe \cite{sift} \cite{
 
 \subsection{Key Stages}
 
-To generate the set of image SIFT features, there are four major stages (detailed description and related code is provided in next part, "\textsl{Code Detailed Description}"):
+To generate the set of image SIFT features, there are four major stages (detailed description and related code is provided in next part, "\textsl{Detailed Description}"):
 
 \textbf{Stage 1. Scale-space extrema detection}
 
@@ -216,28 +193,15 @@ Descriptor is a vector representation computed for the local image region that i
 
 \subsection{Code Detailed Description}
 
-\textsl{Relevant source files}: 
-
-\begin{enumerate}
-    \item src/include/SiftExtractor.h
-    \item src/lib/SiftExtractor.cpp
-\end{enumerate}
-
-\textbf{Note that here only the important functions are described to help users make sense about the process of SIFT, some small functions are not described here.} 
-
 \subsubsection{Creating the Difference of Gaussian Pyramid}
 
 This step is to construct "\textsl{Gaussian Scale Space}" for input image, which is performed by convolution of the original image with gaussian functions of different widths, and to calculate the \textsl{difference of Gaussian (DoG)} as the difference between two filtered images.
 
 \begin{lstlisting}
 void generatePyramid(Mat * img, vector< Octave > &octaves);
-{
     void generateBlurLayers(int layers, double *sigmas);
     void generateDOGPyramid(vector< Octave > & octaves);
-}
 \end{lstlisting}
-
-\textbf{Note: By adding brace around some functions, it means that these functions are called by the outer function. Take above functions for example, generateBlurLayers and generateDOGPyramid are called by generatePyramid. This representation is also used in the rest of this document.} \\
 
 \begin{table}[h]
     \centering
@@ -247,7 +211,7 @@ void generatePyramid(Mat * img, vector< Octave > &octaves);
           \multirow{2}{*}{generatePyramid} & the main function to perform the pipeline of generating \textbf{DoG} and \\ & all other 
                                            functions are called by it \\\hline
                                            \multirow{2}{*}{generateBlurLayers} & use specific Gaussian filter to generate corresponding \\ & layer of scale space\\\hline
-                                           \multirow{2}{*}{generateDOGPyramid} & use the result of second function, \\&Gaussian scale space, to generate DoG pyramid\\\hline
+                                           \multirow{2}{*}{generateDOGPyramid} & The \textsl{generateDOGPyramid} uses the result of second function, \\&Gaussian scale space, to generate DoG pyramid\\\hline
     \end{tabular}
     \caption{Function Description}\label{nolock}
 \end{table}
@@ -266,15 +230,20 @@ void generatePyramid(Mat * img, vector< Octave > &octaves);
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ input}: [image data, scale space] / [layer index in Gaussian scale space, sigma for Gaussian filter] / [Gaussian scale space]
+
+\textbf{@ output}: [DoG Pyramid for input image (stored in variable octaves)] / [one layer in Gaussian scale space] / [DoG Pyramid for input image (stored in variable octaves)]
+
+
+\textbf{@ description}: The \textsl{generatePyramid} is the main function to perform the pipeline of generating \textbf{DoG} and all other functions are called by it. The \textsl{generateBlurLayers} is to use specific Gaussian filter to generate corresponding layer of scale space. The \textsl{generateDOGPyramid} uses the result of second function, Gaussian scale space, to generate DoG pyramid.
+
 \subsubsection{Extrema Detection}
 
 In this step, extrema (maxima and minima) points in the \textbf{DoG} pyramid are detected as the keypoint candidates. In order to do this, the sample point is compared to its eight neighbors in the current layer and other eighteen points in above and below layers.
 
 \begin{lstlisting}
 void extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures);
-{
     bool isExtrema(Octave & octave, int layer, int x, int y, EXTREMA_FLAG_TYPE *nxtMinFlags, EXTREMA_FLAG_TYPE* nxtMaxFlags, int rollIdx);
-}
 \end{lstlisting}
 
 \begin{table}[h]
@@ -283,7 +252,7 @@ void extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures);
         \hline
         \textbf{Function} & \textbf{Function Description} \\\hline
           extremaDetect & the main function to perform extrema detection \\\hline
-              isExtrema & to check whether it is an extrema or not. \\\hline
+              isExtrema & check whether it is an extrema or not. \\\hline
     \end{tabular}
     \caption{Function Description}\label{nolock}
 \end{table}
@@ -299,11 +268,17 @@ void extremaDetect(Octave & octave, int octIdx, vector<Feature> & outFeatures);
         isExtrema & octave & [in] & octave in Gaussian scale space \\
                   & layer & [in] & layer index \\
                   & (x,y) & [in] & point position in that layer \\
-                  & other parameters & [in] & improve efficiency of detecting extrema points\\
+                  & other parameters & [in] & used to improve the efficiency of detecting extrema points\\
                         & - &[return] & If it is a extrema or not \\\hline
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
+
+\textbf{@ input}: [\textsl{octave} in Gaussian scale space, layer index, point features vector that store the keypoint candidates location] / [required layer in Gaussian scale space, layer index, (x,y) is the point position in that layer, last three inputs are used to improve the efficiency of detecting extrema points]
+
+\textbf{@ output}: [extrema points (stored in variable outFeatures)] / [extrema point or not]
+
+\textbf{@ description}: The \textsl{extremaDetect} is the main function to perform extrema detection. The \textsl{isExtrema} is to check whether it is an extrema or not.
 
 \subsubsection{Accurate keypoint location}
 
@@ -311,11 +286,11 @@ This stage is to remove some undesirable candidate points by checking if they ar
 
 \begin{lstlisting}
 bool shouldEliminate(Octave &octave, int &layer, int &x, int &y, double *_X);
-{
     bool poorContrast(Octave & octave, int &layer, int &x, int &y, double *_X);
     bool edgePointEliminate(Mat &img, int x, int y);
-}
 \end{lstlisting}
+
+\textbf{@ description}: The \textsl{shouldEliminate} is  The \textsl{poorContrast} 
 
 \begin{table}[h]
     \centering
@@ -323,7 +298,7 @@ bool shouldEliminate(Octave &octave, int &layer, int &x, int &y, double *_X);
         \hline
         \textbf{Function} & \textbf{Function Description} \\\hline
 \multirow{2}{*}{shouldEliminate} &  to determine whether the candidate point should be eliminated \\& or not and it depends on the result of other two functions\\\hline
-poorContrast &  checks if the candidate point is in low contrast\\\hline
+poorContrast &  checks if the candidate point is in low contrast and the \\\hline
 edgePointEliminate & checks if its location is along edges or not\\\hline
     \end{tabular}
     \caption{Function Description}\label{nolock}
@@ -335,14 +310,12 @@ edgePointEliminate & checks if its location is along edges or not\\\hline
         \hline
         \textbf{Function} & \textbf{Parameter} & \textbf{Type} & \textbf{Parameter Description} \\\hline
         shouldEliminate & octave & [in] & octave in Gaussian scale space \\
-                        & layer & [in/out] & layer index in octave, is updated after interpolation \\
-                        & (x,y) & [in/out] & position in that layer, are updated after interpolation \\
-                        & \_X & [out] & offset($\Delta$[layer,x,y]), are updated interpolation\\\hline
+                        & (x,y) & [in] & point position in that layer \\
+                        & \_X & [out] & offset of location\\\hline
                         & - & [return] & It can be eliminated or not \\\hline
         poorcontrast & octave & [in] & octave in Gaussian scale space \\
-                        & layer & [in/out] & layer index in octave, is updated after interpolation \\
-                        & (x,y) & [in/out] & position in that layer, are updated after interpolation \\
-                        & \_X & [out] & offset($\Delta$[layer,x,y]), are updated interpolation\\\hline
+                        & (x,y) & [in] & point position in that layer \\
+                        & \_X & [out] & offset of location\\\hline
                         & - & [return] & It is poor contrast or not \\\hline
         edgePointEliminate & img & [in] & one layer image in octave \\
                   & (x,y) & [in] & point position in that layer \\
@@ -351,19 +324,23 @@ edgePointEliminate & checks if its location is along edges or not\\\hline
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ input}: [\textsl{octave} in Gaussian scale space, layer index in octave, $(x,y)$ is the point position in that layer, offset of location] / [Same as the first one] / [one layer in \textsl{octave}, $(x,y)$ is the point position]
+
+\textbf{@ output}: [to eliminate or not] / [is in poor contrast or not] / [is localized on an edge or not]
+
+\textbf{@ description}: The \textsl{shouldEliminate} is to determine whether the candidate point should be eliminated or not and it depends on the result of other two functions. The \textsl{poorContrast} checks if the candidate point is in low contrast and the \textsl{edgePointEliminate} checks if its location is along edges or not.
+
 \subsubsection{Orientation assignment}
 
 The keypoint descriptor can be represented according to the assigned orientation to achieve invariance to image rotation. This stage is to assign consistent orientations to keypoints.
 
 \begin{lstlisting}
 void calcFeatureOri(vector< Feature >& features);
-{
     void calcOriHist(Feature& feature, vector< double >& hist);
     bool calcMagOri(Mat* img, int x, int y, double& mag, double& ori);
     double getMatValue(Mat* img, int x, int y);
     void smoothOriHist(vector< double >& hist );
     void addOriFeatures(vector<Feature>& features, Feature& feat, vector< double >& hist);
-}
 \end{lstlisting}
 
 \begin{table}[h]
@@ -381,47 +358,45 @@ smoothOriHist & to smooth the orientation histogram\\\hline
     \caption{Function Description}\label{nolock}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c|c|c|}
         \hline
         \textbf{Function} & \textbf{Parameter} & \textbf{Type} & \textbf{Parameter Description} \\\hline
-       calcFeatureOri & features & [in/out] & keypoint features, feature's orientation is updated \\
-       & &  & after executing function\\\hline
-        calcOriHist & features & [in] & keypoint features \\
+        calcFeatureOri & features & [out] & keypoint features \\\hline
+        calcMagHist & features & [in] & keypoint features \\
                         & hist & [out] & orientation histogram \\\hline
         calMagOri & img & [in] & one specified layer image in octave \\
                   & (x,y) & [in] & point position in that layer \\
                   & mag & [out] & magnitude of gradient \\
                   & ori & [out] & orientation of gradient \\
-                        & - &[return] & this calculation is successful or not \\\hline
+                        & - &[return] & If this calculation is correct or not \\\hline
         getMatValue & img & [in] & one specified layer image in octave \\
                   & (x,y) & [in] & point position in that layer \\
                         & - &[return] & value of the specified layer of octave on the position (x,y)\\\hline
-        smoothOriHist & hist & [in/out] & orientation histogram after smooth, is updated \\
-        & &  & after executing the function \\\hline
-        addOriFeatures & features & [in/out] & keypoint features, feature orientation is updated \\
-        & &  & after executing the function\\
+        smoothOriHist & hist & [out] & orientation histogram after smooth \\\hline
+        addOriFeatures & features & [in] & keypoint features \\
                        & feat & [in] & specified feature to be checked \\
-                       & hist & [in] & orientation histograms for new features \\\hline
+        & hist & [out] & orientation histogram \\\hline
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
+
+\textbf{@ input}: [ keypoint features ] / [ keypoint features, orientation histogram ] / [one specified layer in \textsl{octave}, $(x,y)$ is position on that octave layer, magnitude of gradient, orientation of gradient] / [one specified layer in octave, $(x,y)$ is position on that octave layer ] / [ orientation histogram ] / [ keypoint features, specified feature to be checked, orientation histogram ]
+
+\textbf{@ output}: [ variable features is calculated ] / [ variable hist is calculated ] / [variables mag and ori are calculated] / [ value of the specified layer of octave on the position (x, y) ] / [ orientation histogram after smooth ] / [ keypoint features after setting orientation ]
+
 
 \subsubsection{Keypoint descriptor representation}
 
 The local image gradients are measured at the selected layer of octave in the region around each keypoint and are transformed into representation that is invariant to significant levels of resampling and blurring.
 
-\clearpage
-
 \begin{lstlisting}
 void calcDescriptor(vector<Feature>& features);
-{
     void calcDescHist(Feature& feature, vector< vector< vector<double> > >& hist);
     void interpHistEntry(vector< vector< vector<double> > >& hist, double xIdx, double yIdx, double resultIdx, double weiMag);
     void hist2Desc(vector< vector< vector<double> > >& hist, Feature& feature);
     void furtherProcess(Feature& feature);
-}
 \end{lstlisting}
 
 \begin{table}[h]
@@ -443,28 +418,30 @@ furtherProcess & to truncate and normalize keypoint features\\\hline
     \begin{tabular}{|c|c|c|c|}
         \hline
         \textbf{Function} & \textbf{Parameter} & \textbf{Type} & \textbf{Parameter Description} \\\hline
-        calcDescriptor & features & [in/out] & keypoint features, feature's descriptor is updated\\
-        & &  & after executing the function\\\hline
+        calcDescriptor & features & [in/out] & keypoint features \\\hline
         calcDescHist & feature & [in] & keypoint feature vector \\
             & hist & [out] & descriptor histogram\\\hline
         interpHistEntry & hist & [in/out] & descriptor histogram \\
-        & (xIdx, yIdx)& [in] & the position after rotating the image according to\\
-        & &  & the feature orientation\\
-        & resultIdx & [in] & bin index corresponding to new orientation in rotated image\\
-                        & weiMag & [in] & gradient magnitude after weighting \\\hline
+        & (xIdx, yIdx)& [in] & the position in the original image \\
+        & resultIdx & [in] & bin index corresponding to new orientation\\
+                        & weiMag & [in] & magnitude after weighting \\\hline
+
         hist2Desc & hist & [in] & descriptor histogram \\
-                  & feature  & [out] & keypoint feature, feature's descriptor is updated \\
-                  & &  & after executing the function\\\hline
-        furtherProcess & feature & [in/out] & keypoint is normalized and truncated by threshold \\\hline
+                  & feature  & [out] & keypoint feature  \\\hline
+        furtherProcess & feature & [in/out] & keypoint feature \\\hline
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
-\clearpage
+\textbf{@ input}: [ keypoint features vector ] / [ keypoint features vector, descriptor histogram ] / [ descriptor histogram, (xIdx, yIdx) is the position in the original image, bin index corresponding to new orientation, magnitude after weighting ] / [ descriptor histogram, keypoint feature ] / [keypoint feature] 
 
-\section{SIFT MATCH \& KDTREE} 
+\textbf{@ output}: [ variable features is updated by descriptors ] / [ variable hist is calculated ] / [ variable hist is updated by interpolating ] / [ variable feature’s descriptor is calculated ] / [ variable feature is normalized and truncated by threshold ]
 
-\subsection{SIFT MATCH}\label{sec-sift-match}
+\textbf{@ description}: The \textsl{calcDescriptor} is the main function to calculate the descriptor representation. The \textsl{calcDescHist} is to calculate the descriptor histogram. The \textsl{interpHistEntry} is to interpolate histogram entry in order to get a more accurate value. The \textsl{hist2Desc} is to transform the descriptor histogram into descriptor. The furtherProcess is to truncate and normalize keypoint features.
+
+\section{SIFT MATCH \& KDTREE} \label{sift-match}
+
+\subsection{SIFT MATCH}
 
 \textbf{SiftMatcher} is actually a front-end class or an abstract of KD-TREE. Programmers who want to use this library should use \textbf{SiftMatcher} rather than {KdTree}.  \\
 
@@ -480,9 +457,7 @@ furtherProcess & to truncate and normalize keypoint features\\\hline
 
 \begin{lstlisting}
 void loadDir(const char *dirName);
-{
-    void loadFile(const char *fileName);
-}
+void loadFile(const char *fileName);
 void loadFeatures(std::vector<Feature> & inputFeat);
 \end{lstlisting}
 
@@ -492,8 +467,8 @@ void loadFeatures(std::vector<Feature> & inputFeat);
     \begin{tabular}{|c|c| lp{0.5 textwidth}}
         \hline
         \textbf{Function} & \textbf{Function Description} \\\hline
-                  loadDir & load image features from one directory, it will call function \textbf{loadFile} \\\hline
-\multirow{2}{*}{loadFile} & load features from an image, it stores results to \textsl{.sift} \\& file to avoid repeated SIFT feature calculation for same image \\\hline
+                  loadDir & load image features from all the image file in one directory, it will call function \textbf{loadFile} \\\hline
+loadFile & load image features from a file \\\hline
 loadFeatures & load image features from a set of features \\\hline
     \end{tabular}
     \caption{Function Description}\label{nolock}
@@ -511,6 +486,10 @@ loadFeatures & load image features from a set of features \\\hline
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ input}: [directory name] / [file name] / [a set of feature].
+
+\textbf{@ description}: These functions are called to add feature points into training database. It is easily to be understood that function \textbf{loadDir()} will call \textbf{loadFile()}. 
+
 \subsubsection{Build KD-TREE}
 \begin{lstlisting}
 void setup();
@@ -526,13 +505,15 @@ void setup();
     \caption{Function Description}\label{nolock}
 \end{table}
 
+\textbf{@ description}: This function should be called after you load all the training image into this class object.
+
+It will build a \textbf{KD-TREE} on existed template feature points.
+
 \subsubsection{Match}
 
 \begin{lstlisting}
 std::pair<Feature *, Feature *> match(Feature & input);
-{
-    unsigned long match(vector<Feature> &inputFeats);
-}
+          unsigned long match(vector<Feature> &inputFeats);
 \end{lstlisting}
 
 \begin{table}[h]
@@ -541,7 +522,7 @@ std::pair<Feature *, Feature *> match(Feature & input);
         \hline
         \textbf{Function} & \textbf{Function Description} \\\hline
             match(Feature \&) & match feature, return two nearest features from the kd-tree\\\hline
-            match(vector<Feature > \&) & match a set of feature, is called by the above function, and return a tag.\\\hline
+            match(vector<Feature > \&) & match a set of feature, simply call the previous function, and return a tag.\\\hline
     \end{tabular}
     \caption{Function Description}\label{nolock}
 \end{table}
@@ -559,15 +540,27 @@ std::pair<Feature *, Feature *> match(Feature & input);
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ input}: [Feature] / [A set of Features]
+
+\textbf{@ description}: These function are called to match input feature points. It is easily understood that function \textbf{match(vector<> )} will call function \textbf{match(Feature \&)}.
+
+Function \textbf{match(vector<>)} will return a unique Tag, which can be used to find an object(Typically a name of an matched object in template database). 
+
+Function \textbf{match{Feature \&}} input a feature, and search the nearest and the second nearest feature point in the \textbf{KD-TREE}. 
+
+These two nearest feature points are from different objects(To be more clear, if using on face recognition, these two points should from two different \textbf{people}).
+
+These two nearest features will be tested using the following function:\\
+
 \begin{lstlisting}
 bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
-    ...
-    ...
-    return (bestVal / secBestVal < matchRatio);
+...
+...
+return (bestVal / secBestVal < matchRatio);
 }
 \end{lstlisting}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c| lp{0.5 textwidth}}
         \hline
@@ -583,12 +576,20 @@ bool isGoodMatch(std::pair<Feature *, Feature *> matchs, Feature &inputFeat) {
         \hline
         \textbf{Function} & \textbf{Parameter} & \textbf{Type} & \textbf{Parameter Description} \\\hline
             isGoodMatch & matchs & [in] & the first and second nearest of input feature in kd-tree \\
-             & - & [return] & whether it is a good match or not \\\hline
+             & - & [return] & If it is a good match or not \\\hline
+        match(vector<Feature \&>)& inputFeats & [in] & A set of features \\
+        & - & [return] &A tag if existed, be used to find a matched object.\\\hline 
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
-\subsection{KD TREE}  \label{sec-kd-tree}
+\textbf{@ input}: The nearest and second nearest matched features
+
+\textbf{@ output}: Good Match or Not.
+
+\textbf{@ description}: What it does is simply check if the ratio between the distances from the input feature is lower then a ceil value(By default, 0.8).
+
+\subsection{KD TREE}
 
 In this section, we give an function-level introduction of our implementation for \textbf{KD-TREE}. You don't need to read it if you only want to use the front-end functions.  \\
 
@@ -615,7 +616,7 @@ void buildTree(std::vector<Feature> & features);
     \caption{Function Description}\label{nolock}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c|c|c|}
         \hline
@@ -624,13 +625,15 @@ void buildTree(std::vector<Feature> & features);
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
+\textbf{@ input}: A set of features
 
+\textbf{@ description}: Build a kd-tree on the input features.\\
 
 \begin{lstlisting}
 void split( KDNode * parent );
 \end{lstlisting}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c| lp{0.5 textwidth}}
         \hline
@@ -650,12 +653,14 @@ void split( KDNode * parent );
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ description}: This function is called by function \textbf{buildTree()}, it will recursive split the nodes. At every split process, it will call: 
+
 \begin{lstlisting}
 int selectDimension( KDNode * node );
 double findMedian( KDNode * node, int k );
 \end{lstlisting}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c| lp{0.5 textwidth}}
         \hline
@@ -674,15 +679,30 @@ double findMedian( KDNode * node, int k );
             selectDimension & node & [in] & a KDNode that contains several feature points \\
                             & - & [return] & the dimension with larest variance \\\hline
             findMedian & node& [in] & a KDNode that contains several feature points \\
-            & k & [in] & dimension to be calculated \\
-            & - & [return] & the median of this dimension \\\hline
+            & - & [return] & the median of this process. \\\hline
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
 
+\textbf{@ input}: A node that is being splited.
+
+\textbf{@ output}: Dimension(among 128 dimensions) with the largest variance.
+
+\textbf{@ description}: It return the dimension with the largest variance. It is easily undetstood that spliting on this dimension will seperate the features into two sets with similar size. \\
+
+\begin{lstlisting}
+double findMedian( KDNode * node, int k );
+\end{lstlisting}
+
+\textbf{@ input}: A node that is being splited, selected dimension.
+
+\textbf{@ output}: Median in kth dimension.
+
+\textbf{@ description}: After selecting the best dimension, function \textbf{split} will split its feature points into two sets comparing with the median of them.  \\
+
 \subsubsection{BBF SEARCH}
 
-After generating a balanced kd-tree, the remaining of this class is searching process.
+After generating a balanced kd-tree, the remaining of this class is searching process.\\
 
 \begin{lstlisting}
 std::pair<Feature *,Feature *> bbfNearest( Feature & input );
@@ -698,24 +718,27 @@ std::pair<Feature *,Feature *> bbfNearest( Feature & input );
     \caption{Function Description}\label{nolock}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|c|c|c|c|}
         \hline
         \textbf{Function} & \textbf{Parameter} & \textbf{Type} & \textbf{Parameter Description} \\\hline
             bbfNearest & input & [in] & input feature \\
                             & - & [return] & The nearest and second nearest features on the kd-tree\\\hline
+            & - & [return] & the median of this process. \\\hline
     \end{tabular}
     \caption{Parameter Description}\label{nolock}
 \end{table}
+\textbf{@ input}: A feature.
+\textbf{@ output}: The nearest and the second nearest features on the kd-tree for the input feature.
 
-\clearpage
+\textbf{@ description}: 
 
 \section{Other source codes}
 
 This section give a short description for other source codes, such as the demo codes.
 
-\subsection{DEMO}  \label{sec-demo}
+\subsection{DEMO}
 
 This section give detailed description for how the demo work. To see the expected output, please refer to another document \textbf{Installation-Usage.pdf}. \\
 
@@ -751,7 +774,7 @@ matcher.setMatchRatio(matchRatio);
 matcher.setup();
 \end{lstlisting}
 
-As it is mentioned in section \ref{sec-sift-match}, it will build a kd-tree on the image files from template directory and set the match ratio.
+As it is mentioned in section \ref{sift-match}, it will build a kd-tree on the image files from template directory and set the match ratio.
 
 \subsubsubsection{Get signal from camera}
 \begin{lstlisting}
@@ -793,23 +816,23 @@ This process is supported by opencv. It returns several \textbf{Rectangles} deno
 
 \begin{lstlisting}
 void reconition(Mat frame, vector<Rect> &faces, vector<string > &results) {
-    int faceIdx;
-    vector<Feature> feats;
-    results.clear();
+int faceIdx;
+vector<Feature> feats;
+results.clear();
 
-    SiftExtractor extractor;
+SiftExtractor extractor;
 
-    for(faceIdx = 0; faceIdx < faces.size(); faceIdx ++) {
-        Mat face(frame, faces[faceIdx]);
+for(faceIdx = 0; faceIdx < faces.size(); faceIdx ++) {
+    Mat face(frame, faces[faceIdx]);
 
-        feats.clear();
+    feats.clear();
 
-        extractor.sift(&face, feats);
+    extractor.sift(&face, feats);
 
-        unsigned long matchTag = matcher.match(feats);
+    unsigned long matchTag = matcher.match(feats);
 
-        results.push_back(ImgFileName::descriptor(matchTag));
-    }
+    results.push_back(ImgFileName::descriptor(matchTag));
+}
 }
 \end{lstlisting}
 
@@ -833,7 +856,7 @@ Please refer to \textbf{Installation-Usage.pdf}.
 
 Please refer to \textbf{Installation-Usage.pdf}.
 
-\subsection{Feature} \label{sec-feature}
+\subsection{Feature}
 
 \textsl{Relevant source files}: 
 
@@ -844,7 +867,7 @@ Please refer to \textbf{Installation-Usage.pdf}.
 
 This class is used to store a feature, it also buffer datas used during the sift feature extraction process.\\
 
-\subsection{ImageSet \& ImgFileName}\label{sec-file}
+\subsection{ImageSet \& ImgFileName}
 
 \textsl{Relevant source files}: 
 
@@ -869,7 +892,7 @@ IMG_SUFFIX("pgm")
 \end{lstlisting}
 
 
-\subsection{configures}\label{sec-configure}
+\subsection{configures}
 
 \begin{enumerate}
     \item src/include/configure.h

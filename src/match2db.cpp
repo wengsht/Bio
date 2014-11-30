@@ -45,6 +45,8 @@ char inputFile[MAX_FILE_NAME_LEN] = "./img/att/test/s9_8.pgm";
 
 double matchRatio = DEFAULT_MATCH_RATIO;
 
+int kdBackTrackRatio = KD_BACKTRACK_RATIO;
+
 bool dealOpts(int argc, char **argv);
 
 void combine(Mat &combineMat, Mat &inputImg, Mat &tempImg, int dist);
@@ -72,6 +74,7 @@ int main(int argc, char **argv) {
     matcher.loadDir(templateDir);
     matcher.setup();
     matcher.setMatchRatio(matchRatio);
+    matcher.setKdBackTrackRatio(kdBackTrackRatio);
 
     unsigned long matchTag =  matcher.match(inputFeats);
 
@@ -96,12 +99,13 @@ void drawName(Mat & showImg, std::string name) {
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "hi:t:b:")) != -1) {
+    while((c = getopt(argc, argv, "hi:t:b:k:")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
                         -i input file name\n \
                         -t template template Dir \n \
+                        -k kd bracktrack ratio, lower value means higher accuracy and lower speed\n\
                         -b match ratio(0.8 is reasonable) \n");
 
                 return false;
@@ -114,6 +118,9 @@ bool dealOpts(int argc, char **argv) {
                 break;
         case 'b':
                 sscanf(optarg, "%lf", &matchRatio);
+                break;
+        case 'k':
+                kdBackTrackRatio = atoi(optarg);
                 break;
             default:
                 break;

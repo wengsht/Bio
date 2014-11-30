@@ -94,6 +94,13 @@ class KDTree {
          *
          * */
         void dumpDot( std::ostream &dotOut );
+
+        /**
+         * \brief set backtrack ratio
+         * \param[in] it will search for number(features) / ratio times on the kd-tree, lower ratio means higher accuracy and lower speed
+         *
+         * */
+        void setBackTrackRatio(int ratio);
     private:
         void dump(KDNode * node, std::ostream &dotOut);
 
@@ -187,6 +194,7 @@ class KDTree {
             return (*features)[idx1].sameHashTag((*features)[idx2]);
         }
     private:
+        int kd_backtrack_ratio;
         std::vector<Feature> * features;
         KDNode * root;
         int * link; /**<

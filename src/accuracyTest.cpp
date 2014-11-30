@@ -45,6 +45,7 @@ char trainDir[MAX_FILE_NAME_LEN] = "./img/att/train";
 char testDir[MAX_FILE_NAME_LEN] = "./img/att/test";
 
 double matchRatio = DEFAULT_MATCH_RATIO;
+int kdBackTrackRatio = KD_BACKTRACK_RATIO;
 
 bool dealOpts(int argc, char **argv);
 
@@ -65,6 +66,7 @@ int main(int argc, char **argv) {
     ImgFileName::generateImgNames(testDir, testFileNames);
    
     trainMatcher.setMatchRatio(matchRatio);
+    trainMatcher.setKdBackTrackRatio(kdBackTrackRatio);
     int correctCnt = 0;
     Feature * f1, * f2;
     double b1, b2;
@@ -86,12 +88,13 @@ int main(int argc, char **argv) {
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "hi:t:b:")) != -1) {
+    while((c = getopt(argc, argv, "hi:t:b:k:")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
                         -i input file name\n \
                         -t template template Dir \n \
+                        -k kd bracktrack ratio, lower value means higher accuracy and lower speed\n\
                         -b match ratio(0.8 is reasonable) \n");
 
                 return false;
@@ -104,6 +107,9 @@ bool dealOpts(int argc, char **argv) {
                 break;
         case 'b':
                 sscanf(optarg, "%lf", & matchRatio);
+                break;
+        case 'k':
+                kdBackTrackRatio = atoi(optarg);
                 break;
             default:
                 break;

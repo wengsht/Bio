@@ -25,12 +25,16 @@
 
 using namespace bio;
 
-KDTree::KDTree() : link(NULL), root(NULL) {
+KDTree::KDTree() : link(NULL), root(NULL), kd_backtrack_ratio(KD_BACKTRACK_RATIO) {
 
 }
 
 KDTree::~KDTree() {
 
+}
+
+void KDTree::setBackTrackRatio(int ratio) {
+    kd_backtrack_ratio = ratio;
 }
 
 void KDTree::buildTree(std::vector<Feature> & features) {
@@ -100,7 +104,7 @@ void KDTree::split( KDNode * parent ) {
 
 std::pair<Feature *, Feature *> KDTree::bbfNearest( Feature & input ) {
     //TODO set backTrackTimes to sizeof(features) / 10 ?
-    int backTrackTimes = std::max(KD_MIN_BACKTRACK, (int)((double)(features->size())) / KD_BACKTRACK_RATIO);
+    int backTrackTimes = std::max(KD_MIN_BACKTRACK, (int)((double)(features->size())) / kd_backtrack_ratio);
 
 //    printf("%d\n", backTrackTimes);
 

@@ -27,7 +27,7 @@ Please download opencv-2.4.9 from this link:  http://sourceforge.net/projects/op
 
 #### Compile and install
 
-**IMPORTANT: Before you install opencv, pls confer that you have libgtk-2.0-dev already**
+**IMPORTANT: Before you install opencv, pls confirm that you have libgtk-2.0-dev already**
 
 ```bash
 $ unzip opencv-2.4.9.zip
@@ -50,8 +50,7 @@ $ cmake ../src
 $ make
 ```
 
-After doing these it should generate several demo
-excutable file and input files in build/ directory:
+After doing these it should generate several demo excutable file and data files in build/ directory:
 
 * datas:
     * `img/` : Contain all the test image files
@@ -154,13 +153,13 @@ pls do it in build/
 It simply draws the detected name on the face. You can get the name from the filename. Here we input file `./img/att/test/s9_8.pgm` and get the result `s9`(Come from the train datas!!) on his face.
 
 ##### Parameters
-For this demo, you can change the input image and template directory, you can also change the ratio (simply the ceil ratio between the best and second best match).
+For this demo, you can change the input image and template directory, you can also change the ratio (simply the ceil ratio between the best and second best match, $[0.4,0.9]$) and the back track times on the search of kd-tree. Lower backTrackRatio means higher accuracy and slower performance. Its reasonable value is $[2, 10]$.
 
 ```bash
-Usage: ./match2db -i input file name -t template directory -b ratio
+Usage: ./match2db -i input file name -t template directory -b ratio -k brackTrackRatio
 e.g.:
 
-./match2db -t img/att/train -i ./img/att/test/s10_10.pgm -b 0.8
+./match2db -t img/att/train -i ./img/att/test/s10_10.pgm -b 0.8 -k 2
 ```
 
 #### DEMO 4. accuracyTest
@@ -187,13 +186,14 @@ It is `correct_count:tested_count:size_of_test_database`
 *This process will take half an hour testing on 200files-to-200files match*
 
 ##### Parameters
-For this demo, you can change the input directory and template directory, you can also change the ratio (simply the ceil ratio between the best and second best match).
+
+For this demo, you can change the input image and template directory, you can also change the ratio (simply the ceil ratio between the best and second best match, $[0.4,0.9]$) and the back track times on the search of kd-tree. Lower backTrackRatio means higher accuracy and slower performance. Its reasonable value is $[2, 10]$.
 
 ```bash
-Usage: ./match2db -i input directory -t template directory -b ratio
+Usage: ./match2db -i input directory -t template directory -b ratio -k backTrackRatio
 e.g.:
 
-./accuracyTest -t img/att/train -i ./img/att/test/ -b 0.8
+./accuracyTest -t img/att/train -i ./img/att/test/ -b 0.8 -k 2
 ```
 By default, it will test on `att` database. If you want to test on `yaleface` database:
 
@@ -220,11 +220,11 @@ pls do it in build/
 
 ##### Parameter 
 
-For this demo, you can change the template directory, you can also change the ratio (simply the ceil ratio between the best and second best match).
+For this demo, you can change the template directory, you can also change the ratio (simply the ceil ratio between the best and second best match, $[0.4,0.9]$) and the back track times on the search of kd-tree. Lower backTrackRatio means higher accuracy and slower performance. Its reasonable value is $[2, 10]$.
 
 ```bash
-Usage: ./camera -t template directory -b ratio
+Usage: ./camera -t template directory -b ratio -k backTrackRatio
 e.g.:
 
-./camera -t img/ -b 0.8
+./camera -t img/ -b 0.8 -k 2
 ```

@@ -78,6 +78,7 @@ pthread_mutex_t detect_lock = PTHREAD_MUTEX_INITIALIZER;
 Mat temp;
 
 double matchRatio = DEFAULT_MATCH_RATIO;
+int kdBackTrackRatio = KD_BACKTRACK_RATIO;
 
 int main(int argc, char **argv) {
     if(!dealOpts(argc, argv))
@@ -93,10 +94,9 @@ int main(int argc, char **argv) {
     cap.set( CV_CAP_PROP_FRAME_HEIGHT,CAP_HEIGHT);
 
     matcher.loadDir( templateDir );
-    matcher.setMatchRatio(0.8);
-
-    matcher.setup();
     matcher.setMatchRatio(matchRatio);
+    matcher.setKdBackTrackRatio(kdBackTrackRatio);
+    matcher.setup();
 
     while(true) {
         cap >> frame;
@@ -132,11 +132,12 @@ int main(int argc, char **argv) {
 
 bool dealOpts(int argc, char **argv) {
     int c;
-    while((c = getopt(argc, argv, "ht:b:")) != -1) {
+    while((c = getopt(argc, argv, "ht:b:k:")) != -1) {
         switch(c) {
             case 'h':
                 printf("usage: \n \
                         -b Match ratio [0.8 is reasonable] \n\
+                        -k kd bracktrack ratio, lower value means higher accuracy and lower speed\n\
                         -t template dir \n\
                         \n");
 
@@ -147,6 +148,9 @@ bool dealOpts(int argc, char **argv) {
                 break;
             case 'b':
                 sscanf(optarg, "%lf", &matchRatio);
+                break;
+            case 'k':
+                kdBackTrackRatio = atoi(optarg);
                 break;
             default:
                 break;

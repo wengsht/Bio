@@ -63,6 +63,12 @@ class SiftMatcher {
 
         void setMatchRatio(double ratio);
         void setMatchThres(double thres);
+        /**
+         * \brief set backtrack ratio of kd-tree
+         * \param[in] it will search for number(features) / ratio times on the kd-tree, lower ratio means higher accuracy and lower speed
+         *
+         * */
+        void setKdBackTrackRatio(int ratio);
 
     private:
         double matchRatio;
