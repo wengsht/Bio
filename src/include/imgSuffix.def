@@ -1,0 +1,32 @@
+#ifdef IMG_SUFFIX
+
+IMG_SUFFIX("png")
+IMG_SUFFIX("jpg")
+IMG_SUFFIX("jpeg")
+IMG_SUFFIX("pgm")
+
+IMG_SUFFIX("centerlight")
+IMG_SUFFIX("glasses")
+IMG_SUFFIX("happy")
+IMG_SUFFIX("leftlight")
+IMG_SUFFIX("noglasses")
+IMG_SUFFIX("normal")
+IMG_SUFFIX("rightlight")
+IMG_SUFFIX("sad")
+IMG_SUFFIX("sleepy")
+IMG_SUFFIX("surprised")
+IMG_SUFFIX("wink")
+
+IMG_SUFFIX("bmp")
+IMG_SUFFIX("dib")
+IMG_SUFFIX("jpe")
+IMG_SUFFIX("jp2")
+IMG_SUFFIX("pbm")
+IMG_SUFFIX("ppm")
+IMG_SUFFIX("sr")
+IMG_SUFFIX("ras")
+IMG_SUFFIX("tiff")
+IMG_SUFFIX("tif")
+
+#undef IMG_SUFFIX
+#endif

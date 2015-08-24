@@ -1,0 +1,11 @@
+build/
+*.swp
+*.swo
+*.orig
+tags
+*.DS_Store
+latex/
+html/
+debug.txt
+doxy.sh 
+*.sift

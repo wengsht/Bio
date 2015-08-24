@@ -1,0 +1,26 @@
+\begin{thebibliography}{1}
+
+\bibitem{att}
+F.~S. Samaria, F.~S.~S. *t, A.~Harter, and O.~A. Site, ``Parameterisation of a
+  stochastic model for human face identification,'' 1994.
+
+\bibitem{yale}
+Y.~face database, ``http://vision.ucsd.edu/content/yale-face-database.''
+
+\bibitem{sift}
+D.~G. Lowe, ``Distinctive image features from scale-invariant keypoints,'' {\em
+  Int. J. Comput. Vision}, vol.~60, pp.~91--110, Nov. 2004.
+
+\bibitem{sift-99}
+D.~G. Lowe, ``Object recognition from local scale-invariant features,'' in {\em
+  Proceedings of the International Conference on Computer Vision-Volume 2 -
+  Volume 2}, ICCV '99, (Washington, DC, USA), pp.~1150--, IEEE Computer
+  Society, 1999.
+
+\bibitem{Se01vision-basedmobile}
+S.~Se, D.~Lowe, and J.~Little, ``Vision-based mobile robot localization and
+  mapping using scale-invariant features,'' in {\em In Proceedings of the IEEE
+  International Conference on Robotics and Automation (ICRA}, pp.~2051--2058,
+  2001.
+
+\end{thebibliography}
